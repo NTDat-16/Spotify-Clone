@@ -1,0 +1,6 @@
+file note của Duy
+
+django
+pymysql
+zustand
+axios

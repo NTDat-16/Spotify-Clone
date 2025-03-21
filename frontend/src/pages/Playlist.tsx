@@ -7,154 +7,86 @@ import {
   Trash2Icon,
   PlusCircleIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useMusicStore } from "../stores/useMusicStore"; // Giả định đường dẫn tới MusicStore
 
 interface PlaylistProps {
-  setCurrentSong: (song: { title: string; artist: string; cover: string }) => void;
+  setCurrentSong: (song: {
+    title: string;
+    artist: string;
+    image_url: string;
+  }) => void;
 }
 
 const Playlist: React.FC<PlaylistProps> = ({ setCurrentSong }) => {
-  const { id } = useParams();
+  const { id } = useParams<string>(); // id là string từ url vd: 127.0.0.1:5173/playlist/1 => id = 1
+  const { currentAlbum, songs, loading, error, fetchAlbumById, fetchSongs } =
+    useMusicStore();
 
-  // Mock data ban đầu cho playlist
-  const initialPlaylist = {
-    id: parseInt(id || "0"),
-    title:
-      id === "1"
-        ? "Chill Vibes"
-        : id === "2"
-        ? "Workout Mix"
-        : id === "3"
-        ? "Study Session"
-        : "Party Anthems",
-    description: "A collection of relaxing tunes to unwind and chill",
-    cover:
-      "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
-    songs: [
-      {
-        id: 1,
-        title: "Calm Waters",
-        artist: "Serene Sound",
-        album: "Ocean Waves",
-        duration: "3:45",
-        cover:
-          "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
-      },
-      {
-        id: 2,
-        title: "Mountain Air",
-        artist: "Nature Sounds",
-        album: "Wilderness",
-        duration: "4:20",
-        cover:
-          "https://images.unsplash.com/photo-1598387993211-5c4c0fda1248?ixlib=rb-4.0.3&auto=format&fit=crop&w=776&q=80",
-      },
-      {
-        id: 3,
-        title: "Gentle Rain",
-        artist: "Ambient Melody",
-        album: "Rainfall",
-        duration: "5:12",
-        cover:
-          "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
-      },
-      {
-        id: 4,
-        title: "Sunset Horizon",
-        artist: "Chill Wave",
-        album: "Evening Glow",
-        duration: "3:58",
-        cover:
-          "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80",
-      },
-      {
-        id: 5,
-        title: "Starry Night",
-        artist: "Dream Sounds",
-        album: "Night Sky",
-        duration: "4:35",
-        cover:
-          "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
-      },
-    ],
-  };
-
-  const [playlist, setPlaylist] = useState(initialPlaylist);
   const [isAddFormVisible, setIsAddFormVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // State cho menu hiển thị chức năng của playlist
   const [isMenuVisible, setIsMenuVisible] = useState(false);
-  // State cho chỉnh sửa tiêu đề playlist
   const [isEditingTitle, setIsEditingTitle] = useState(false);
-  const [newTitle, setNewTitle] = useState(playlist.title);
-  // State cho hộp thoại xác nhận xóa playlist
+  const [newTitle, setNewTitle] = useState("");
   const [isDeleteConfirmVisible, setIsDeleteConfirmVisible] = useState(false);
 
-  // Nếu playlist bị xóa, hiển thị thông báo
-  if (!playlist) {
+  // Mock danh sách bài hát có thể thêm (sẽ thay bằng songs từ store)
+  const availableSongs = songs.length > 0 ? songs : [];
+
+  // Fetch dữ liệu khi component mount hoặc id thay đổi
+  useEffect(() => {
+    if (id) {
+      fetchAlbumById(parseInt(id)); // Gọi API để lấy album theo id
+    }
+  }, [id, fetchAlbumById]);
+
+  // Đồng bộ newTitle với currentAlbum khi nó thay đổi
+  useEffect(() => {
+    if (currentAlbum) {
+      setNewTitle(currentAlbum.title);
+    }
+  }, [currentAlbum]);
+
+  //  TODO: loading
+  if (loading) return <div className="p-6">Loading...</div>;
+  // Xử lý  error
+  if (error || !currentAlbum)
     return (
       <div className="p-6">
-        <p className="text-center text-gray-600">Playlist đã bị xóa.</p>
+        <p className="text-center text-gray-600">
+          {error || "Playlist không tồn tại"}
+        </p>
       </div>
     );
-  }
-
-  // Mock danh sách bài hát có thể thêm (trong thực tế sẽ lấy từ API)
-  const availableSongs = [
-    {
-      id: 6,
-      title: "New Day",
-      artist: "Fresh Beats",
-      album: "Morning Light",
-      duration: "3:20",
-      cover:
-        "https://images.unsplash.com/photo-1506157786151-b8491531f063?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
-    },
-    {
-      id: 7,
-      title: "Echoes",
-      artist: "Sound Wave",
-      album: "Reflections",
-      duration: "4:10",
-      cover:
-        "https://images.unsplash.com/photo-1511379936541-3b73d289c3b9?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80",
-    },
-  ];
-
-  // Xóa bài hát khỏi playlist
-  const handleDeleteSong = (songId: number) => {
-    const updatedSongs = playlist.songs.filter((song) => song.id !== songId);
-    setPlaylist({ ...playlist, songs: updatedSongs });
-  };
 
   // Phát bài hát
-  const handlePlaySong = (song: {
-    id: number;
-    title: string;
-    artist: string;
-    album: string;
-    duration: string;
-    cover: string;
-  }) => {
+  const handlePlaySong = (song: (typeof currentAlbum.songs)[0]) => {
     setCurrentSong({
       title: song.title,
       artist: song.artist,
-      cover: song.cover,
+      image_url: song.image_url,
     });
   };
 
-  // Thêm bài hát vào playlist
-  const handleAddSong = (song: {
-    id: number;
-    title: string;
-    artist: string;
-    album: string;
-    duration: string;
-    cover: string;
-  }) => {
-    if (!playlist.songs.some((s) => s.id === song.id)) {
-      setPlaylist({ ...playlist, songs: [...playlist.songs, song] });
+  // Xóa bài hát khỏi playlist (mock)
+  const handleDeleteSong = (songId: number) => {
+    const updatedSongs = currentAlbum.songs.filter(
+      (song) => song.id !== songId
+    );
+    useMusicStore.setState({
+      currentAlbum: { ...currentAlbum, songs: updatedSongs },
+    });
+  };
+
+  // Thêm bài hát vào playlist (mock)
+  const handleAddSong = (song: (typeof songs)[0]) => {
+    if (!currentAlbum.songs.some((s) => s.id === song.id)) {
+      useMusicStore.setState({
+        currentAlbum: {
+          ...currentAlbum,
+          songs: [...currentAlbum.songs, song],
+        },
+      });
     }
     setIsAddFormVisible(false);
     setSearchTerm("");
@@ -167,43 +99,44 @@ const Playlist: React.FC<PlaylistProps> = ({ setCurrentSong }) => {
       song.artist.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Xử lý đổi tên playlist
+  // Đổi tên playlist (mock)
   const handleRenamePlaylist = () => {
-    setPlaylist({ ...playlist, title: newTitle });
+    useMusicStore.setState({
+      currentAlbum: { ...currentAlbum, title: newTitle },
+    });
     setIsEditingTitle(false);
     setIsMenuVisible(false);
   };
 
-  // Khi nhấn "Xóa playlist" trong menu, mở hộp thoại xác nhận
+  // Mở hộp thoại xác nhận xóa playlist
   const handleOpenDeleteConfirm = () => {
     setIsMenuVisible(false);
     setIsDeleteConfirmVisible(true);
   };
 
-  // Xác nhận xóa playlist
+  // Xác nhận xóa playlist (mock)
   const handleConfirmDeletePlaylist = () => {
     alert("Playlist đã được xóa!");
+    useMusicStore.setState({ currentAlbum: null });
     setIsDeleteConfirmVisible(false);
   };
 
   return (
     <div className="p-6 relative">
-      {/* Header với relative để định vị menu */}
+      {/* Header */}
       <div className="flex items-center gap-6 mb-8">
         <img
-          src={playlist.cover}
-          alt={playlist.title}
+          src={currentAlbum.image_url || "https://via.placeholder.com/150"}
+          alt={currentAlbum.title}
           className="w-48 h-48 object-cover rounded-lg shadow-md"
         />
         <div className="relative flex-1">
-          {/* Nút 3 gạch đặt ở góc trên bên phải */}
           <button
             className="absolute top-0 right-0 text-gray-400 hover:text-gray-800"
             onClick={() => setIsMenuVisible(!isMenuVisible)}
           >
             <Menu size={18} />
           </button>
-          {/* Menu chức năng */}
           {isMenuVisible && (
             <div className="absolute top-6 right-0 bg-white shadow-lg rounded-md py-2 w-40 z-10">
               <button
@@ -223,8 +156,6 @@ const Playlist: React.FC<PlaylistProps> = ({ setCurrentSong }) => {
               </button>
             </div>
           )}
-
-          {/* Hiển thị tiêu đề playlist, nếu đang chỉnh sửa thì hiển thị input */}
           {isEditingTitle ? (
             <div className="flex items-center gap-2">
               <input
@@ -243,17 +174,19 @@ const Playlist: React.FC<PlaylistProps> = ({ setCurrentSong }) => {
                 className="px-3 py-1 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
                 onClick={() => {
                   setIsEditingTitle(false);
-                  setNewTitle(playlist.title);
+                  setNewTitle(currentAlbum.title);
                 }}
               >
                 Hủy
               </button>
             </div>
           ) : (
-            <h1 className="text-3xl font-bold mb-2">{playlist.title}</h1>
+            <h1 className="text-3xl font-bold mb-2">{currentAlbum.title}</h1>
           )}
-          <p className="text-gray-600 mb-4">{playlist.description}</p>
-          <p className="text-sm text-gray-500">{playlist.songs.length} songs</p>
+          <p className="text-gray-600 mb-4">{currentAlbum.description}</p>
+          <p className="text-sm text-gray-500">
+            {currentAlbum.songs.length} songs
+          </p>
           <div className="mt-4 flex items-center gap-3">
             <button className="px-6 py-2 bg-gray-800 text-white rounded-full flex items-center gap-2 hover:bg-gray-700">
               <PlayIcon size={18} />
@@ -290,7 +223,7 @@ const Playlist: React.FC<PlaylistProps> = ({ setCurrentSong }) => {
               >
                 <div className="flex items-center gap-3">
                   <img
-                    src={song.cover}
+                    src={song.image_url || "https://via.placeholder.com/40"}
                     alt={song.title}
                     className="h-10 w-10 rounded object-cover"
                   />
@@ -327,7 +260,7 @@ const Playlist: React.FC<PlaylistProps> = ({ setCurrentSong }) => {
                 Title
               </th>
               <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Album
+                Artist
               </th>
               <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center">
                 <Clock3Icon size={14} />
@@ -336,7 +269,7 @@ const Playlist: React.FC<PlaylistProps> = ({ setCurrentSong }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {playlist.songs.map((song, index) => (
+            {currentAlbum.songs.map((song, index) => (
               <tr
                 key={song.id}
                 className="hover:bg-gray-50 cursor-pointer"
@@ -349,7 +282,7 @@ const Playlist: React.FC<PlaylistProps> = ({ setCurrentSong }) => {
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <img
-                      src={song.cover}
+                      src={song.image_url || "https://via.placeholder.com/40"}
                       alt={song.title}
                       className="h-10 w-10 rounded object-cover mr-3"
                     />
@@ -362,24 +295,20 @@ const Playlist: React.FC<PlaylistProps> = ({ setCurrentSong }) => {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {song.album}
+                  {song.artist}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {song.duration}
+                  {song.duration || "N/A"}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex items-center gap-3">
                     <button className="text-gray-400 hover:text-gray-800">
                       <HeartIcon size={18} />
                     </button>
-                    <button className="text-gray-400 hover:text-gray-800">
-                      {/* Nút này có thể giữ nguyên nếu muốn */}
-                      <Menu size={18} />
-                    </button>
                     <button
                       className="text-gray-400 hover:text-red-600"
                       onClick={(e) => {
-                        e.stopPropagation(); // Ngăn sự kiện click trên row
+                        e.stopPropagation();
                         handleDeleteSong(song.id);
                       }}
                     >

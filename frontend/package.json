@@ -10,11 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.8.4",
     "lucide-react": "latest",
     "magic-patterns-vite-template": "file:",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "latest"
+    "react-router-dom": "latest",
+    "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@types/node": "^20.11.18",

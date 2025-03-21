@@ -1,38 +1,44 @@
 import React from "react";
 import { PlayIcon, Clock3Icon, TrashIcon } from "lucide-react";
-const LovedSongs = ({
-  setCurrentSong
-}) => {
-  const lovedSongs = [{
-    id: 1,
-    title: "Dreams",
-    artist: "Fleetwood Mac",
-    album: "Rumours",
-    duration: "4:17",
-    cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
-  }, {
-    id: 2,
-    title: "Billie Jean",
-    artist: "Michael Jackson",
-    album: "Thriller",
-    duration: "4:54",
-    cover: "https://images.unsplash.com/photo-1598387993211-5c4c0fda1248?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80"
-  }, {
-    id: 3,
-    title: "Bohemian Rhapsody",
-    artist: "Queen",
-    album: "A Night at the Opera",
-    duration: "5:55",
-    cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
-  }];
-  const handlePlaySong = song => {
+const LovedSongs = ({ setCurrentSong }) => {
+  const lovedSongs = [
+    {
+      id: 1,
+      title: "Dreams",
+      artist: "Fleetwood Mac",
+      album: "Rumours",
+      duration: "4:17",
+      image_url:
+        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    },
+    {
+      id: 2,
+      title: "Billie Jean",
+      artist: "Michael Jackson",
+      album: "Thriller",
+      duration: "4:54",
+      image_url:
+        "https://images.unsplash.com/photo-1598387993211-5c4c0fda1248?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80",
+    },
+    {
+      id: 3,
+      title: "Bohemian Rhapsody",
+      artist: "Queen",
+      album: "A Night at the Opera",
+      duration: "5:55",
+      image_url:
+        "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80",
+    },
+  ];
+  const handlePlaySong = (song) => {
     setCurrentSong({
       title: song.title,
       artist: song.artist,
-      cover: song.cover
+      image_url: song.image_url,
     });
   };
-  return <div>
+  return (
+    <div>
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold mb-2">Loved Songs</h1>
@@ -63,13 +69,22 @@ const LovedSongs = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {lovedSongs.map((song, index) => <tr key={song.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handlePlaySong(song)}>
+            {lovedSongs.map((song, index) => (
+              <tr
+                key={song.id}
+                className="hover:bg-gray-50 cursor-pointer"
+                onClick={() => handlePlaySong(song)}
+              >
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {index + 1}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <img src={song.cover} alt={song.title} className="h-10 w-10 rounded object-cover mr-3" />
+                    <img
+                      src={song.image_url}
+                      alt={song.title}
+                      className="h-10 w-10 rounded object-cover mr-3"
+                    />
                     <div>
                       <div className="text-sm font-medium text-gray-900">
                         {song.title}
@@ -85,17 +100,22 @@ const LovedSongs = ({
                   {song.duration}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button className="text-gray-400 hover:text-red-500" onClick={e => {
-                e.stopPropagation();
-                // In a real app, this would remove the song from loved songs
-              }}>
+                  <button
+                    className="text-gray-400 hover:text-red-500"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // In a real app, this would remove the song from loved songs
+                    }}
+                  >
                     <TrashIcon size={18} />
                   </button>
                 </td>
-              </tr>)}
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
-    </div>;
+    </div>
+  );
 };
 export default LovedSongs;
