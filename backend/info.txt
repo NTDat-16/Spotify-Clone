@@ -1,0 +1,14 @@
+Cách dùng database (MySQL)
+1. Tạo một database có tên : spotify_clone
+2. cd vào thư mục backend
+3. gõ: python manage.py makemigrations  (Có thể không cần gõ, nếu không có chỉnh sửa models api)
+4. gõ: python manage.py migrate (Tạo các bảng cho database theo migrations ở trên)
+5. gõ: python manage.py runserver (chạy server backend mặc định http:/localhost:8000/api hoặc http:/127.0.0.1:8000/api)
+6. Import file data.sql vào MySQL để có dữ liệu
+
+Note dependencies
+
+django
+pymysql
+zustand
+axios

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./LoginForm.css";
 import { MdOutlineMailOutline } from "react-icons/md";
 import { RiLockPasswordFill } from "react-icons/ri";
@@ -7,6 +7,18 @@ const Login = ({ onLogin }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Ref để focus chuyển từ email -> password -> submit
+  const passwordRef = useRef(null);
+  const submitButtonRef = useRef(null);
+
+  // Hàm xử lý sự kiện Enter
+  const handleEnter = (e, nextFocus) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      nextFocus?.current?.focus(); // Focus vào element tiếp theo
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -35,7 +47,8 @@ const Login = ({ onLogin }) => {
                   placeholder="Email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="input-field  text-black"
+                  onKeyDown={(e) => handleEnter(e, passwordRef)} // Chuyển focus sang password khi nhấn Enter
+                  className="input-field text-black"
                   required
                 />
               </div>
@@ -48,18 +61,19 @@ const Login = ({ onLogin }) => {
               </label>
               <div className="input-container">
                 <RiLockPasswordFill className="input-icon" />
-                  <input
-                    id="password"
-                    placeholder="Password"
-                    type="password"
-                     
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input-field text-black"
-                    required
-                  />
+                <input
+                  id="password"
+                  ref={passwordRef} // Ref cho password input
+                  placeholder="Password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => handleEnter(e, submitButtonRef)} // Focus sang nút Submit khi nhấn Enter
+                  className="input-field text-black"
+                  required
+                />
               </div>
-            </div>  
+            </div>
 
             {/* Confirm Password (Only for Sign Up) */}
             {!isLogin && (
@@ -78,13 +92,17 @@ const Login = ({ onLogin }) => {
 
             {/* Submit Button */}
             <div>
-              <button type="submit" className="btnSubmib py-2 px-4 bg-gray-800 text-white font-medium rounded-lg hover:bg-green-700">
+              <button
+                type="submit"
+                ref={submitButtonRef} // Ref cho nút Submit
+                className="btnSubmib py-2 px-4 bg-gray-800 text-white font-medium rounded-lg hover:bg-green-700"
+              >
                 {isLogin ? "Sign In" : "Sign Up"}
               </button>
             </div>
           </form>
 
-          {/* Toggle between Sign In / Sign Up */}  
+          {/* Toggle between Sign In / Sign Up */}
           <div className="mt-6 text-center">
             <button onClick={() => setIsLogin(!isLogin)} className="text-sm text-black hover:text-blue-900">
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
