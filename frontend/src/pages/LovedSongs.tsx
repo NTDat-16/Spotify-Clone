@@ -1,4 +1,3 @@
-import React from "react";
 import { PlayIcon, Clock3Icon, TrashIcon } from "lucide-react";
 const LovedSongs = ({
   setCurrentSong

@@ -1,0 +1,11 @@
+cd backend 
+virtualenv venv (cài môi trường ảo)
+venv\Scripts\activate (kích hoạt môi trường ảo)
+pip install django (cài django)
+python manage.py runserver (chạy) thiếu gì thì cài thêm (mở chat lên)
+
+cd frontend
+npm install
+npm run dev
+
+=> chạy backend và frontend xong xong
