@@ -1,9 +1,7 @@
 import axios from "axios";
-
-//url cảu backend
-const  API_URL = "http://127.0.0.1:8000/api";
+import { API_BASE_URL } from "../config/api";
 
 export const getSongs = async () => {
-    const response = await axios.get('${API_URL}/songs/');
+    const response = await axios.get(`${API_BASE_URL}/songs/`);
     return response.data;
 };
