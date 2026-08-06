@@ -25,7 +25,7 @@ const AllSongs: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     axios
-      .get("http://127.0.0.1:8000/api/songs/")
+      .get(${API_ORIGIN}/api/songs/)
       .then((response) => {
         const mappedSongs = response.data.map((song: any) => ({
           id: song.id,
@@ -67,7 +67,7 @@ const AllSongs: React.FC = () => {
     }
 
     // Proceed with download if the song is non-premium or the user is premium
-    const songUrl = `http://127.0.0.1:8000/audio/${song.song_url}`;
+    const songUrl = ${API_ORIGIN}/audio/${song.song_url};
     const xhr = new XMLHttpRequest();
     xhr.open("GET", songUrl, true);
     xhr.responseType = "blob";

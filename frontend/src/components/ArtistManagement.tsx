@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash, RotateCcw, Save, XCircle, Mic} from "lucide-react";
+import { API_ORIGIN } from "../config/api";
 
 interface Artist {
     id: number;
@@ -20,7 +21,7 @@ export default function ArtistManagement() {
         const fetchArtistsData = async () => {
             setLoading(true);
             try {
-                const response = await fetch("http://127.0.0.1:8000/api/artists/");
+const response = await fetch(`${API_ORIGIN}/api/artists/`);
                 if (!response.ok) {
                     const body = await response.text();
                     throw new Error(`Không thể lấy danh sách nghệ sĩ: ${body}`);
@@ -48,9 +49,9 @@ export default function ArtistManagement() {
 
     const submitArtistData = async (artistData: Artist | { name: string }, isEdit: boolean) => {
         try {
-            const url = isEdit
-                ? `http://127.0.0.1:8000/api/artists/${(artistData as Artist).id}/`
-                : "http://127.0.0.1:8000/api/add-artist/";
+const url = isEdit
+                ? `${API_ORIGIN}/api/artists/${(artistData as Artist).id}/`
+                : `${API_ORIGIN}/api/add-artist/`;
             const method = isEdit ? "PUT" : "POST";
 
             const response = await fetch(url, {
@@ -94,7 +95,7 @@ export default function ArtistManagement() {
 
     const changeArtistStatus = async (id: number) => {
         try {
-            const response = await fetch(`http://127.0.0.1:8000/api/artists/change/${id}/`, {
+            const response = await fetch(${API_ORIGIN}/api/artists/change/${id}/, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
             });

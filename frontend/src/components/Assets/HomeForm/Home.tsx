@@ -42,7 +42,7 @@ const Home: React.FC = () => {
     const fetchTopSongs = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch("http://localhost:8000/api/songs/?ordering=-play_count");
+        const response = await fetch(${API_ORIGIN}/api/songs/?ordering=-play_count);
         if (!response.ok) throw new Error("Không thể tải bảng xếp hạng.");
         const data = await response.json();
 
@@ -77,7 +77,7 @@ const Home: React.FC = () => {
 
     const fetchAlbums = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/albums/");
+        const response = await fetch(${API_ORIGIN}/api/albums/);
         if (!response.ok) throw new Error("Không thể tải danh sách album.");
         const data = await response.json();
         // const filteredAlbums = data.filter((album: any) => album.songs && album.songs.length > 0);
@@ -98,7 +98,7 @@ const Home: React.FC = () => {
       alert("Bạn cần tài khoản Premium để tải bài hát này.");
       return;
     }
-    const songUrl = `http://localhost:8000/audio/${song.song_url}`;
+    const songUrl = ${API_ORIGIN}/audio/${song.song_url};
     const xhr = new XMLHttpRequest();
     xhr.open("GET", songUrl, true);
     xhr.responseType = "blob";

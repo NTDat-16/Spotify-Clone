@@ -33,7 +33,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         `http://localhost:8000/api/users/${user.id}/`,
+//         ${API_ORIGIN}/api/users/${user.id}/,
 //         {
 //           isPremium: true,
 //         }
@@ -133,7 +133,7 @@ const PremiumSignup: React.FC<PremiumSignupProps> = ({ user, setUser }) => {
             createOrder: async () => {
               try {
                 const response = await axios.post(
-                  "http://localhost:8000/api/paypal/create/",
+                  ${API_ORIGIN}/api/paypal/create/,
                   {},
                   {
                     headers: {
@@ -158,7 +158,7 @@ const PremiumSignup: React.FC<PremiumSignupProps> = ({ user, setUser }) => {
             onApprove: async (data: { orderID: string; payerID: string }) => {
               try {
                 const response = await axios.post(
-                  "http://localhost:8000/api/paypal/execute/",
+                  ${API_ORIGIN}/api/paypal/execute/,
                   { paymentId: data.orderID, PayerID: data.payerID },
                   { 
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },

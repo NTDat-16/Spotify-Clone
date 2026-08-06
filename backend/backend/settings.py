@@ -60,15 +60,31 @@ TEMPLATES = [{
     ]},
 }]
 
-# A serverless function cannot use the old localhost MySQL instance. Set DATABASE_URL
-# on Vercel to a managed Postgres/MySQL database URL. SQLite is local-development only.
-DATABASES = {
-    "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
+# Production (Vercel) reads DATABASE_URL from Environment Variables (Supabase PostgreSQL).
+# Local development uses MySQL localhost when DATABASE_URL is not set.
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    # Production: Supabase PostgreSQL trên Vercel
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    # Local: MySQL localhost (không dùng SQLite cho production)
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.getenv("MYSQL_DATABASE", "spotify_clone"),
+            "USER": os.getenv("MYSQL_USER", "root"),
+            "PASSWORD": os.getenv("MYSQL_PASSWORD", ""),
+            "HOST": os.getenv("MYSQL_HOST", "localhost"),
+            "PORT": os.getenv("MYSQL_PORT", "3306"),
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -88,11 +104,17 @@ MEDIA_URL = "/audio/"
 MEDIA_ROOT = BASE_DIR / "audio"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Set the deployed frontend URL in CORS_ALLOWED_ORIGINS, for example:
-# https://spotify-frontend.vercel.app
-CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173")
+# Set the deployed frontend URL in CORS_ALLOWED_ORIGINS.
+# Mặc định gồm local dev + production frontend; có thể ghi đè qua env trên Vercel.
+CORS_ALLOWED_ORIGINS = env_list(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:5173,https://spotify-clone-14.vercel.app",
+)
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173"))
+CSRF_TRUSTED_ORIGINS = env_list(
+    "CSRF_TRUSTED_ORIGINS",
+    os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173,https://spotify-clone-14.vercel.app"),
+)
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.getenv("VERCEL") == "1"

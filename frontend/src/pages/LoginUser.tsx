@@ -12,7 +12,7 @@
 // //   setIsLoggedIn?: React.Dispatch<React.SetStateAction<boolean>>;
 // // }
 
-// // const API_BASE_URL = "http://localhost:8000/api";
+// // const API_BASE_URL = ${API_ORIGIN}/api;
 
 // // const LoginUser = ({ onLogin, setIsLoggedIn }: LoginUserProps) => {
 // //   const navigate = useNavigate();
@@ -207,7 +207,7 @@
 //   setIsLoggedIn?: React.Dispatch<React.SetStateAction<boolean>>;
 // }
 
-// const API_BASE_URL = "http://localhost:8000/api";
+// const API_BASE_URL = ${API_ORIGIN}/api;
 
 // const LoginUser = ({ onLogin, setIsLoggedIn }: LoginUserProps) => {
 //   const navigate = useNavigate();
@@ -393,6 +393,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_ORIGIN } from "../config/api";
 
 interface LoginUserProps {
   onLogin?: (
@@ -403,7 +404,7 @@ interface LoginUserProps {
   setIsLoggedIn?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = `${API_ORIGIN}/api`;
 
 const LoginUser = ({ onLogin, setIsLoggedIn }: LoginUserProps) => {
   const navigate = useNavigate();

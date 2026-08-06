@@ -1,3 +1,4 @@
+import { API_ORIGIN } from "../config/api";
         import React, { useState, useRef, useEffect } from "react";
         import { useAudio } from "../AudioContext";
 
@@ -13,7 +14,7 @@
             const [error, setError] = useState<string | null>(null);
             const modalRef = useRef<HTMLDivElement>(null);
             const videoRef = useRef<HTMLVideoElement>(null);
-            const baseUrl = "http://localhost:8000"; // URL gốc cho file media
+            const baseUrl = ${API_ORIGIN}; // URL gốc cho file media
 
             useEffect(() => {
                 const fetchSongData = async () => {

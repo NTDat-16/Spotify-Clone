@@ -14,7 +14,7 @@ export default function Dashboard() {
     const [activeArtists, setActiveArtists] = useState(0);
     // State để lưu dữ liệu và trạng thái loading
     useEffect(() => {
-        axios.get("http://localhost:8000/api/artists/")
+        axios.get(${API_ORIGIN}/api/artists/)
             .then(res => {
                 const data = res.data;
                 const active = data.filter((artist:Artist) => artist.status === 1);

@@ -32,7 +32,7 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get("http://127.0.0.1:8000/api/songs/", {
+        const response = await axios.get(${API_ORIGIN}/api/songs/, {
           params: { search: searchQuery },
         });
         const data = response.data.map((song: any) => ({
@@ -109,7 +109,7 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <img
-                        src={`http://127.0.0.1:8000${song.image_url}`}
+                        src={${API_ORIGIN}${song.image_url}}
                         alt={song.name}
                         className="h-10 w-10 rounded object-cover mr-3"
                       />

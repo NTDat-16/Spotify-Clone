@@ -45,13 +45,13 @@ const ViewAlbum: React.FC = () => {
             try {
                 setLoading(true);
                 
-                const albumResponse = await fetch(`http://localhost:8000/api/albums/${id}/`);
+                const albumResponse = await fetch(${API_ORIGIN}/api/albums/${id}/);
                 if (!albumResponse.ok) {
                     throw new Error('Failed to fetch album data');
                 }
                 const albumJson = await albumResponse.json();
                 
-                const songsResponse = await fetch(`http://localhost:8000/api/songs/album/${id}/`);
+                const songsResponse = await fetch(${API_ORIGIN}/api/songs/album/${id}/);
                 if (!songsResponse.ok) {
                     throw new Error('Chưa có bài hát');
                 }

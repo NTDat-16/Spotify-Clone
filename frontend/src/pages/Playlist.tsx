@@ -60,7 +60,7 @@ const Playlist: React.FC = () => {
     const fetchPlaylist = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost:8000/api/playlists/${id}/`);
+        const response = await fetch(${API_ORIGIN}/api/playlists/${id}/);
         if (!response.ok) throw new Error("Không thể tải playlist.");
         const data = await response.json();
         console.log("Playlist API response:", data); // Debug: Log API response
@@ -89,7 +89,7 @@ const Playlist: React.FC = () => {
 
     const fetchAvailableSongs = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/songs/");
+        const response = await fetch(${API_ORIGIN}/api/songs/);
         if (!response.ok) throw new Error("Không thể tải danh sách bài hát.");
         const data = await response.json();
         console.log("Songs API response:", data); // Debug: Log API response
@@ -121,7 +121,7 @@ const Playlist: React.FC = () => {
       if (!playlist) return;
       try {
         const response = await fetch(
-          `http://localhost:8000/api/playlist_songs/${id}/${songId}/`,
+          ${API_ORIGIN}/api/playlist_songs/${id}/${songId}/,
           { method: "DELETE" }
         );
         if (!response.ok) throw new Error("Không thể xóa bài hát.");
@@ -149,7 +149,7 @@ const Playlist: React.FC = () => {
         return;
       }
       try {
-        const response = await fetch(`http://localhost:8000/api/playlist_songs/`, {
+        const response = await fetch(${API_ORIGIN}/api/playlist_songs/, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ playlist_id: id, song_id: song.id }),
@@ -184,7 +184,7 @@ const Playlist: React.FC = () => {
       if (!playlist || newTitle.trim() === "") return;
       try {
         const response = await fetch(
-          `http://localhost:8000/api/playlists/update/${id}/`,
+          ${API_ORIGIN}/api/playlists/update/${id}/,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
@@ -207,7 +207,7 @@ const Playlist: React.FC = () => {
     async () => {
       try {
         const response = await fetch(
-          `http://localhost:8000/api/playlists/delete/${id}/`,
+          ${API_ORIGIN}/api/playlists/delete/${id}/,
           {
             method: "DELETE",
           }
@@ -228,7 +228,7 @@ const Playlist: React.FC = () => {
         alert("Bạn cần tài khoản Premium để tải bài hát này.");
         return;
       }
-      const songUrl = `http://localhost:8000/audio/${song.song_url}`;
+      const songUrl = ${API_ORIGIN}/audio/${song.song_url};
       const xhr = new XMLHttpRequest();
       xhr.open("GET", songUrl, true);
       xhr.responseType = "blob";

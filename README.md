@@ -25,10 +25,11 @@ Một ứng dụng web nhạc streaming được phát triển nhằm mô phỏn
 |------|-----------|----------|
 | **Frontend** | React + TypeScript | - |
 | **Backend** | Django + Django REST Framework | Python 3.x |
-| **Database** | MySQL | - |
+| **Database** | PostgreSQL (local) / Supabase PostgreSQL (production) | - |
 | **UI Framework** | Tailwind CSS | - |
 | **Build Tool** | Vite | - |
 | **Payment** | PayPal SDK | - |
+| **Deploy** | Vercel (frontend + backend riêng) | - |
 
 ---
 
@@ -78,7 +79,7 @@ Spotify-Clone/
 ### Backend
 - Python >= 3.8
 - pip (Python package manager)
-- MySQL Server
+- PostgreSQL Server (local) HOẶC Supabase PostgreSQL (production)
 
 ---
 
@@ -153,24 +154,23 @@ npm run dev
 
 ## 🔐 Cấu hình Database
 
-1. Tạo database MySQL:
+Django đọc `DATABASE_URL` (Supabase PostgreSQL) khi có giá trị, ngược lại dùng PostgreSQL local.
+
+### Local (PostgreSQL)
+1. Tạo database local:
 ```sql
 CREATE DATABASE spotify_clone;
 ```
-
-2. Cập nhật `backend/backend/settings.py` với thông tin kết nối:
-```python
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'spotify_clone',
-        'USER': 'your_mysql_user',
-        'PASSWORD': 'your_mysql_password',
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
-}
+2. Đặt biến môi trường (hoặc bỏ trống để dùng mặc định local):
 ```
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/spotify_clone
+```
+
+### Production (Supabase PostgreSQL trên Vercel)
+1. Đặt `DATABASE_URL` là connection string từ Supabase (Project Settings → Database → Connection string → URI).
+2. Đặt các biến: `DJANGO_SECRET_KEY`, `DEBUG=False`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `CSRF_TRUSTED_ORIGINS`.
+
+`settings.py` tự động dùng PostgreSQL qua `dj_database_url.config()`.
 
 ---
 
@@ -204,10 +204,11 @@ VITE_PAYPAL_CLIENT_ID=your_paypal_client_id
 ### Backend
 - Django
 - Django REST Framework
-- MySQL Python connector
-- Python-decouple
+- django-cors-headers
+- dj-database-url
+- psycopg2-binary (PostgreSQL driver)
 
-Xem đầy đủ tại: [Requirements.txt](Requirements.txt)
+Xem đầy đủ tại: [requirements.txt](backend/requirements.txt)
 
 ### Frontend
 - React

@@ -62,7 +62,7 @@ const Chat = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/users/", {
+        const response = await fetch(${API_ORIGIN}/api/users/, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -97,7 +97,7 @@ const Chat = () => {
 
     try {
       const response = await fetch(
-        `http://127.0.0.1:8000/api/messages/?sender_id=${currentUserId}&receiver_id=${selectedUser.id}`,
+        ${API_ORIGIN}/api/messages/?sender_id=${currentUserId}&receiver_id=${selectedUser.id},
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -188,7 +188,7 @@ const Chat = () => {
       });
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/api/send_message/", {
+        const response = await fetch(${API_ORIGIN}/api/send_message/, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

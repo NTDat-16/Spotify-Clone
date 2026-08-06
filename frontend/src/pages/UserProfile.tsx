@@ -39,7 +39,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         `http://localhost:8000/api/users/${user.id}/`,
+//         ${API_ORIGIN}/api/users/${user.id}/,
 //         {
 //           username,
 //           email: user.email,
@@ -63,7 +63,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         `http://localhost:8000/api/users/${user.id}/`,
+//         ${API_ORIGIN}/api/users/${user.id}/,
 //         {
 //           isPremium: true,
 //         }
@@ -241,7 +241,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, setUser }) => {
 
     try {
       const response = await axios.put(
-        `http://localhost:8000/api/users/${user.id}/`,
+        ${API_ORIGIN}/api/users/${user.id}/,
         {
           username,
           email: user.email,

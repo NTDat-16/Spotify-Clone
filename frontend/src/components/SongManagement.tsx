@@ -54,7 +54,7 @@ export default function SongManager() {
     const [isFormVisible, setIsFormVisible] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const BASE_URL = "http://127.0.0.1:8000";
+    const BASE_URL = ${API_ORIGIN};
 
     useEffect(() => {
         const fetchData = async () => {

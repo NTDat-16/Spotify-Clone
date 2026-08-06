@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useRef, ReactNode, useEffect } from "react";
+import { API_ORIGIN } from "./config/api";
 
 type Song = {
   id: number;
@@ -106,10 +107,10 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
         alert("Bạn cần tài khoản Premium để phát bài hát này.");
         return;
       }
-    }
+}
 
     const audio = audioRef.current;
-    const audioUrl = `http://127.0.0.1:8000/audio/${song.song_url}`;
+    const audioUrl = `${API_ORIGIN}/audio/${song.song_url}`;
     console.log("Playing audio URL:", audioUrl); // Debug URL
 
     try {

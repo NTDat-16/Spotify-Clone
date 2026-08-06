@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Plus, Edit, Trash, RotateCcw, Save, XCircle, Disc3 } from "lucide-react";
+import { API_ORIGIN } from "../config/api";
 
 interface Artist {
     id: number;
@@ -42,7 +43,7 @@ export default function Album() {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const BASE_URL = "http://127.0.0.1:8000";
+const BASE_URL = API_ORIGIN;
 
     useEffect(() => {
         const fetchData = async () => {
