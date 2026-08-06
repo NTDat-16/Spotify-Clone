@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_ORIGIN } from "../config/api";
 import { Plus, Edit, Trash, RotateCcw, Save, XCircle, Music } from "lucide-react";
 
 interface Artist {
@@ -54,7 +55,7 @@ export default function SongManager() {
     const [isFormVisible, setIsFormVisible] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const BASE_URL = ${API_ORIGIN};
+    const BASE_URL = `${API_ORIGIN}`;
 
     useEffect(() => {
         const fetchData = async () => {

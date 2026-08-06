@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_ORIGIN } from "../../../config/api";
 import { PlayIcon, CircleEllipsis } from "lucide-react";
 import { useAudio } from "../../../AudioContext";
 import {useNavigate} from "react-router-dom";
@@ -42,7 +43,7 @@ const Home: React.FC = () => {
     const fetchTopSongs = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(${API_ORIGIN}/api/songs/?ordering=-play_count);
+        const response = await fetch(`${API_ORIGIN}/api/songs/?ordering=-play_count`);
         if (!response.ok) throw new Error("Không thể tải bảng xếp hạng.");
         const data = await response.json();
 
@@ -77,7 +78,7 @@ const Home: React.FC = () => {
 
     const fetchAlbums = async () => {
       try {
-        const response = await fetch(${API_ORIGIN}/api/albums/);
+        const response = await fetch(`${API_ORIGIN}/api/albums/`);
         if (!response.ok) throw new Error("Không thể tải danh sách album.");
         const data = await response.json();
         // const filteredAlbums = data.filter((album: any) => album.songs && album.songs.length > 0);
@@ -98,7 +99,7 @@ const Home: React.FC = () => {
       alert("Bạn cần tài khoản Premium để tải bài hát này.");
       return;
     }
-    const songUrl = ${API_ORIGIN}/audio/${song.song_url};
+    const songUrl = `${API_ORIGIN}/audio/${song.song_url}`;
     const xhr = new XMLHttpRequest();
     xhr.open("GET", songUrl, true);
     xhr.responseType = "blob";

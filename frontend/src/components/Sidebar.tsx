@@ -1,5 +1,6 @@
 // frontend/src/components/Sidebar.tsx
 import { useState, useEffect } from "react";
+import { API_ORIGIN } from "../config/api";
 import { NavLink, useNavigate } from "react-router-dom";
 import { ListMusicIcon, PlusCircleIcon, Trash2Icon } from "lucide-react";
 
@@ -41,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isLoggedIn, user }) => {
       setLoading(true);
       try {
         const response = await fetch(
-          ${API_ORIGIN}/api/playlists/?user_id=${user.id}
+          `${API_ORIGIN}/api/playlists/?user_id=${user.id}`
         );
         if (!response.ok) throw new Error("Không thể tải danh sách playlist.");
         const data = await response.json();
@@ -73,7 +74,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isLoggedIn, user }) => {
     if (!isLoggedIn || !user) return;
 
     try {
-      const response = await fetch(${API_ORIGIN}/api/playlists/add/, {
+      const response = await fetch(`${API_ORIGIN}/api/playlists/add/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newPlaylistName.trim(), user_id: user.id }),
@@ -97,7 +98,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isLoggedIn, user }) => {
     if (!confirm("Bạn có chắc chắn muốn xóa playlist này không?")) return;
     try {
       const response = await fetch(
-        ${API_ORIGIN}/api/playlists/delete/${playlistId}/,
+        `${API_ORIGIN}/api/playlists/delete/${playlistId}/`,
         { method: "DELETE" }
       );
       if (!response.ok) throw new Error("Không thể xóa playlist.");

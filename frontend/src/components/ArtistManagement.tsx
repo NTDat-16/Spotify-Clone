@@ -95,7 +95,7 @@ const url = isEdit
 
     const changeArtistStatus = async (id: number) => {
         try {
-            const response = await fetch(${API_ORIGIN}/api/artists/change/${id}/, {
+            const response = await fetch(`${API_ORIGIN}/api/artists/change/${id}/`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
             });

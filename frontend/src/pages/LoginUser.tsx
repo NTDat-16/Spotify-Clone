@@ -12,7 +12,7 @@
 // //   setIsLoggedIn?: React.Dispatch<React.SetStateAction<boolean>>;
 // // }
 
-// // const API_BASE_URL = ${API_ORIGIN}/api;
+// // const API_BASE_URL = `${API_ORIGIN}/api`;
 
 // // const LoginUser = ({ onLogin, setIsLoggedIn }: LoginUserProps) => {
 // //   const navigate = useNavigate();
@@ -207,7 +207,7 @@
 //   setIsLoggedIn?: React.Dispatch<React.SetStateAction<boolean>>;
 // }
 
-// const API_BASE_URL = ${API_ORIGIN}/api;
+// const API_BASE_URL = `${API_ORIGIN}/api`;
 
 // const LoginUser = ({ onLogin, setIsLoggedIn }: LoginUserProps) => {
 //   const navigate = useNavigate();

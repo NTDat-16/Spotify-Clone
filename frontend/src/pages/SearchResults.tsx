@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import { API_ORIGIN } from "../config/api";
 import axios from "axios";
 import { Clock3Icon } from "lucide-react";
 import { useAudio } from "../AudioContext";
@@ -32,7 +33,7 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(${API_ORIGIN}/api/songs/, {
+        const response = await axios.get(`${API_ORIGIN}/api/songs/`, {
           params: { search: searchQuery },
         });
         const data = response.data.map((song: any) => ({
@@ -108,8 +109,8 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <img
-                        src={${API_ORIGIN}${song.image_url}}
+<img
+                        src={`${API_ORIGIN}${song.image_url}`}
                         alt={song.name}
                         className="h-10 w-10 rounded object-cover mr-3"
                       />
@@ -125,7 +126,7 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
                     {song.album || "N/A"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDuration(song.duration)}
+{formatDuration(song.duration)}
                   </td>
                 </tr>
               ))}

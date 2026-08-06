@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_ORIGIN } from "../config/api";
 import { FaMusic, FaUsers, FaMicrophone } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -14,7 +15,7 @@ export default function Dashboard() {
     const [activeArtists, setActiveArtists] = useState(0);
     // State để lưu dữ liệu và trạng thái loading
     useEffect(() => {
-        axios.get(${API_ORIGIN}/api/artists/)
+        axios.get(`${API_ORIGIN}/api/artists/`)
             .then(res => {
                 const data = res.data;
                 const active = data.filter((artist:Artist) => artist.status === 1);
@@ -37,8 +38,8 @@ export default function Dashboard() {
         const fetchStats = async () => {
             try {
                 setLoading(true);
-                // Lấy thống kê tổng quan
-                const statsResponse = await axios.get('http://localhost:8000/api/stats/');
+// Lấy thống kê tổng quan
+                const statsResponse = await axios.get(`${API_ORIGIN}/api/stats/`);
                 setStats({
                     totalSongs: statsResponse.data.total_songs,
                     totalUsers: statsResponse.data.total_users,
@@ -46,7 +47,7 @@ export default function Dashboard() {
                 });
 
                 // Lấy dữ liệu cho biểu đồ user mới theo ngày
-                const userGrowthResponse = await axios.get('http://localhost:8000/api/stats/users-by-date/');
+                const userGrowthResponse = await axios.get(`${API_ORIGIN}/api/stats/users-by-date/`);
                 setUserGrowthData(userGrowthResponse.data); // Ví dụ: [{ date: '2025-04-01', count: 10 }, { date: '2025-04-02', count: 15 }]
             } catch (error) {
                 console.error('Lỗi khi lấy dữ liệu thống kê:', error);

@@ -33,7 +33,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         ${API_ORIGIN}/api/users/${user.id}/,
+//         `${API_ORIGIN}/api/users/${user.id}/`,
 //         {
 //           isPremium: true,
 //         }
@@ -93,6 +93,7 @@
 
 
 import React, { useState, useEffect } from "react";
+import { API_ORIGIN } from "../config/api";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -133,7 +134,7 @@ const PremiumSignup: React.FC<PremiumSignupProps> = ({ user, setUser }) => {
             createOrder: async () => {
               try {
                 const response = await axios.post(
-                  ${API_ORIGIN}/api/paypal/create/,
+                  `${API_ORIGIN}/api/paypal/create/`,
                   {},
                   {
                     headers: {
@@ -158,7 +159,7 @@ const PremiumSignup: React.FC<PremiumSignupProps> = ({ user, setUser }) => {
             onApprove: async (data: { orderID: string; payerID: string }) => {
               try {
                 const response = await axios.post(
-                  ${API_ORIGIN}/api/paypal/execute/,
+                  `${API_ORIGIN}/api/paypal/execute/`,
                   { paymentId: data.orderID, PayerID: data.payerID },
                   { 
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },

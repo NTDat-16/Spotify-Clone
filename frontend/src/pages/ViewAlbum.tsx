@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_ORIGIN } from "../config/api";
 import { PlayIcon, Clock, MoreHorizontal, Download } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAudio } from "../AudioContext";
@@ -45,13 +46,13 @@ const ViewAlbum: React.FC = () => {
             try {
                 setLoading(true);
                 
-                const albumResponse = await fetch(${API_ORIGIN}/api/albums/${id}/);
+                const albumResponse = await fetch(`${API_ORIGIN}/api/albums/${id}/`);
                 if (!albumResponse.ok) {
                     throw new Error('Failed to fetch album data');
                 }
                 const albumJson = await albumResponse.json();
                 
-                const songsResponse = await fetch(${API_ORIGIN}/api/songs/album/${id}/);
+                const songsResponse = await fetch(`${API_ORIGIN}/api/songs/album/${id}/`);
                 if (!songsResponse.ok) {
                     throw new Error('Chưa có bài hát');
                 }

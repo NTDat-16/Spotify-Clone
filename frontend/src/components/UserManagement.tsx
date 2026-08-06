@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { API_ORIGIN } from "../config/api";
 import { Disc3, Lock, Unlock } from "lucide-react";
 
 // Lấy danh sách người dùng
 const fetchUsersData = async (setUsers: Function, setLoading: Function) => {
     setLoading(true);
     try {
-        const res = await fetch(${API_ORIGIN}/api/users/);
+        const res = await fetch(`${API_ORIGIN}/api/users/`);
         const body = await res.text();
         if (!res.ok) throw new Error(`Không thể lấy danh sách người dùng: ${body}`);
         setUsers(JSON.parse(body));
@@ -19,7 +20,7 @@ const fetchUsersData = async (setUsers: Function, setLoading: Function) => {
 // Toggle trạng thái người dùng (mở/khóa)
 const toggleUserStatus = async (id: number, setUsers: Function) => {
     try {
-        const res = await fetch(${API_ORIGIN}/api/users/${id}/toggle-status/, {
+        const res = await fetch(`${API_ORIGIN}/api/users/${id}/toggle-status/`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
         });
@@ -38,7 +39,7 @@ const toggleUserStatus = async (id: number, setUsers: Function) => {
     } catch (error) {
         alert(`Lỗi: ${error instanceof Error ? error.message : "Lỗi không xác định"}`);
         try {
-            const res = await fetch(${API_ORIGIN}/api/users/);
+            const res = await fetch(`${API_ORIGIN}/api/users/`);
             const users = await res.json();
             setUsers(users);
         } catch (fetchErr) {
@@ -53,7 +54,7 @@ export default function UserManagement() {
     const [searchQuery, setSearchQuery] = useState<string>("");
     const [error, setError] = useState<string | null>(null);
 
-    const BASE_URL = ${API_ORIGIN};
+    const BASE_URL = `${API_ORIGIN}`;
 
     useEffect(() => {
         fetchUsersData(setUsers, setLoading);

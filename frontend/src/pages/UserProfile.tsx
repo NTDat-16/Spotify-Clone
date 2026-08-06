@@ -39,7 +39,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         ${API_ORIGIN}/api/users/${user.id}/,
+//         `${API_ORIGIN}/api/users/${user.id}/`,
 //         {
 //           username,
 //           email: user.email,
@@ -63,7 +63,7 @@
 
 //     try {
 //       const response = await axios.put(
-//         ${API_ORIGIN}/api/users/${user.id}/,
+//         `${API_ORIGIN}/api/users/${user.id}/`,
 //         {
 //           isPremium: true,
 //         }
@@ -202,6 +202,7 @@
 
 
 import React, { useState, useEffect } from "react";
+import { API_ORIGIN } from "../config/api";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -241,7 +242,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, setUser }) => {
 
     try {
       const response = await axios.put(
-        ${API_ORIGIN}/api/users/${user.id}/,
+        `${API_ORIGIN}/api/users/${user.id}/`,
         {
           username,
           email: user.email,

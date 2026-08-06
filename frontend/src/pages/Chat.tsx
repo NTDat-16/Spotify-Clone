@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { API_ORIGIN } from "../config/api";
 import { SendIcon, UserIcon, SearchIcon } from "lucide-react";
 
 interface Users {
@@ -62,7 +63,7 @@ const Chat = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch(${API_ORIGIN}/api/users/, {
+        const response = await fetch(`${API_ORIGIN}/api/users/`, {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
@@ -97,7 +98,7 @@ const Chat = () => {
 
     try {
       const response = await fetch(
-        ${API_ORIGIN}/api/messages/?sender_id=${currentUserId}&receiver_id=${selectedUser.id},
+        `${API_ORIGIN}/api/messages/?sender_id=${currentUserId}&receiver_id=${selectedUser.id}`,
         {
           method: "GET",
           headers: { "Content-Type": "application/json" },
@@ -188,7 +189,7 @@ const Chat = () => {
       });
 
       try {
-        const response = await fetch(${API_ORIGIN}/api/send_message/, {
+        const response = await fetch(`${API_ORIGIN}/api/send_message/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

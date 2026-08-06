@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { API_ORIGIN } from "../config/api";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -58,7 +59,7 @@ interface ChangePasswordProps {
         try {
             console.log("Sending password update request:", { current_password: currentPassword, new_password: newPassword });
             const response = await axios.put(
-                ${API_ORIGIN}/api/users/${user.id}/change_password/, // Sửa URL đúng với API bạn đã cấu hình
+                `${API_ORIGIN}/api/users/${user.id}/change_password/`, // Sửa URL đúng với API bạn đã cấu hình
                 {
                     current_password: currentPassword,
                     new_password: newPassword,
