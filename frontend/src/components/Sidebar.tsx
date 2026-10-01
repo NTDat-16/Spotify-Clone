@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { API_ORIGIN } from "../config/api";
 import { NavLink, useNavigate } from "react-router-dom";
-import { ListMusicIcon, PlusCircleIcon, Trash2Icon } from "lucide-react";
+import { ListMusicIcon, PlusCircleIcon, Trash2Icon, Crown } from "lucide-react";
 
 interface Playlist {
   id: number;
@@ -171,6 +171,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isLoggedIn, user }) => {
               <span>Chat & AI DJ</span>
               <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#1DB954] text-black">
                 AI
+              </span>
+            </NavLink>
+          </li>
+          <li>
+            <NavLink
+              to="/premium"
+              className={({ isActive }) =>
+                `flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition ${
+                  isActive
+                    ? "bg-gradient-to-r from-amber-400 to-yellow-500 text-black font-extrabold shadow-md"
+                    : "hover:bg-gray-800 text-amber-300 hover:text-white"
+                }`
+              }
+            >
+              <div className="flex items-center gap-2.5">
+                <Crown size={17} className="text-yellow-400" />
+                <span>Nâng cấp Premium</span>
+              </div>
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-yellow-400 text-black uppercase tracking-wider">
+                VIP
               </span>
             </NavLink>
           </li>

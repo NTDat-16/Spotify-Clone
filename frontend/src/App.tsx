@@ -227,7 +227,7 @@ import {
   Navigate,
   useNavigate,
 } from "react-router-dom";
-import { Search, UserIcon} from "lucide-react";
+import { Search, UserIcon, Sparkles } from "lucide-react";
 import Sidebar from "./components/Sidebar";
 import MusicPlayer from "./components/MusicPlayer";
 import YouTubePlayer from "./components/YouTubePlayer";
@@ -305,19 +305,39 @@ function MainLayout({
               className="w-full pl-10 pr-4 py-2 bg-[#282828] text-white rounded-full outline-none placeholder-gray-400 focus:ring-2 focus:ring-gray-500"
             />
           </div>
-          <div className="relative">
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2"
-            >
-              <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white text-sm">
-                {isLoggedIn && user ? (
-                  user.username.charAt(0).toUpperCase()
-                ) : (
-                  <UserIcon size={20} />
-                )}
-              </div>
-            </button>
+          <div className="flex items-center gap-3">
+            {user?.isPremium ? (
+              <button
+                onClick={() => navigate("/premium")}
+                title="Tài khoản Spotify Premium"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-black shadow hover:opacity-90 transition"
+              >
+                <span>★ PREMIUM</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/premium")}
+                title="Khám phá các gói Spotify Premium"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-black hover:scale-105 active:scale-95 transition shadow"
+              >
+                <Sparkles size={14} className="text-[#1DB954]" />
+                <span>Khám phá Premium</span>
+              </button>
+            )}
+
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2"
+              >
+                <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white text-sm">
+                  {isLoggedIn && user ? (
+                    user.username.charAt(0).toUpperCase()
+                  ) : (
+                    <UserIcon size={20} />
+                  )}
+                </div>
+              </button>
             {showUserMenu && (
               <UserMenu
                 isLoggedIn={isLoggedIn}
@@ -327,6 +347,7 @@ function MainLayout({
                 onClose={() => setShowUserMenu(false)}
               />
             )}
+            </div>
           </div>
         </header>
         <main className="flex-1 bg-[#121212] overflow-y-auto p-0">

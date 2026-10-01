@@ -34,6 +34,7 @@ from .views import (
     get_album_details,
     get_songs_by_album,
     get_song_by_id,
+    upgrade_premium,
 )
 from .external_api import (
     spotify_search,
@@ -79,6 +80,7 @@ urlpatterns = [
     path('api/users/', get_users, name='get_users'),
     path('api/user/add/', add_user, name='add_user'),
     path('api/users/<int:pk>/', update_user, name='update_user'),
+    path('api/users/<int:pk>/upgrade-premium/', upgrade_premium, name='upgrade_premium'),
     path('api/users/login/', login_user, name='login_user'),
     path('api/delete-user/<int:pk>/', delete_user, name='delete_user'),
     path('api/users/<int:pk>/toggle-status/', changestatus_user, name='changestatus_user'),

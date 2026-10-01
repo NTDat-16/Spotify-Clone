@@ -528,19 +528,39 @@ def login_user(request):
     }, status=status.HTTP_200_OK)
 
 # Cập nhật thông tin người dùng
-@api_view(['PUT'])
+@api_view(['PUT', 'PATCH'])
 def update_user(request, pk):
     try:
         user = User.objects.get(pk=pk)
     except User.DoesNotExist:
         return Response({"error": "Người dùng không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
-    serializer = UserSerializer(user, data=request.data)
+    serializer = UserSerializer(user, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         updated_data = serializer.data
         updated_data['isPremium'] = bool(updated_data['isPremium'])  # Chuyển 0/1 thành false/true
         return Response(updated_data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Nâng cấp người dùng lên tài khoản Premium trực tiếp
+@api_view(['POST'])
+def upgrade_premium(request, pk):
+    try:
+        user = User.objects.get(pk=pk)
+        user.isPremium = True
+        user.save()
+        return Response({
+            "message": "Nâng cấp tài khoản lên Spotify Premium thành công!",
+            "isPremium": True,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "isPremium": True
+            }
+        }, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "Không tìm thấy người dùng."}, status=status.HTTP_404_NOT_FOUND)
 
 # Thay đổi trạng thái người dùng
 @api_view(['PUT'])
