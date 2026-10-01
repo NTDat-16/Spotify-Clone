@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { API_ORIGIN } from "../../../config/api";
-import { PlayIcon, CircleEllipsis, Heart, Tv } from "lucide-react";
+import { PlayIcon, CircleEllipsis, Heart, Tv, Sparkles, Flame, Disc, Radio } from "lucide-react";
 import { useAudio, isPremiumSong, isUserPremiumAccount, Song } from "../../../AudioContext";
 import { useNavigate } from "react-router-dom";
 import { getLovedSongs, toggleLovedSong } from "../../../services/favorites";
-import { getAudioUrl } from "../../../utils/media";
+import { getAudioUrl, getImageUrl } from "../../../utils/media";
 import { getSpotifyNewReleases } from "../../../services/spotify";
 
 interface Album {
@@ -23,6 +23,8 @@ const Home: React.FC = () => {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [lovedIds, setLovedIds] = useState<Set<string>>(() => new Set(getLovedSongs().map((s) => String(s.id))));
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     const handleUpdate = () => {
       setLovedIds(new Set(getLovedSongs().map((s) => String(s.id))));
@@ -31,7 +33,6 @@ const Home: React.FC = () => {
     return () => window.removeEventListener("loved-songs-updated", handleUpdate);
   }, []);
 
-  // Format duration
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -46,29 +47,22 @@ const Home: React.FC = () => {
         if (!response.ok) throw new Error("Không thể tải bảng xếp hạng.");
         const data = await response.json();
 
-        // Chỉ lấy 10 bài hát đầu tiên
-        const top10Songs = data.slice(0, 10);
-
-        const mappedSongs = top10Songs.map((song: any) => ({
+        const mappedSongs: Song[] = data.map((song: any) => ({
           id: song.id,
           name: song.name || "Unknown Song",
           artist: song.artist_name || "Unknown Artist",
           album: song.album_name || null,
-          duration: song.duration || 1,
+          duration: song.duration || 180,
           song_url: song.song_url || "",
-          image_url: song.album_img
-            ? `/uploads/albums/${song.album_img}`
-            : "/default-cover.png",
+          image_url: getImageUrl(song.album_img),
           premium: song.premium || 0,
+          source: (song.song_url ? "local" : "spotify") as any,
         }));
 
         setTopSongs(mappedSongs);
-
-        // Cập nhật songList chỉ với topSongs
         setSongList(mappedSongs);
-        console.log("Set songList in Home (Top Songs):", mappedSongs);
       } catch (err) {
-        setError("Đã xảy ra lỗi khi tải bảng xếp hạng.");
+        setError("Đã xảy ra lỗi khi tải danh sách bài hát.");
         console.error(err);
       } finally {
         setIsLoading(false);
@@ -80,11 +74,9 @@ const Home: React.FC = () => {
         const response = await fetch(`${API_ORIGIN}/api/albums/`);
         if (!response.ok) throw new Error("Không thể tải danh sách album.");
         const data = await response.json();
-        // const filteredAlbums = data.filter((album: any) => album.songs && album.songs.length > 0);
         setAlbums(data);
       } catch (err) {
-        setError("Đã xảy ra lỗi khi tải danh sách album.");
-        console.error(err);
+        console.error("Lỗi khi tải danh sách album:", err);
       }
     };
 
@@ -109,6 +101,10 @@ const Home: React.FC = () => {
       return;
     }
     const songUrl = getAudioUrl(song.song_url);
+    if (!songUrl) {
+      alert("Bài hát này phát trực tuyến qua Spotify & YouTube Player.");
+      return;
+    }
     const xhr = new XMLHttpRequest();
     xhr.open("GET", songUrl, true);
     xhr.responseType = "blob";
@@ -126,30 +122,199 @@ const Home: React.FC = () => {
     };
     xhr.send();
   };
-  const navigate = useNavigate();
-  // Hàm phát bài từ recentlyPlayed, không chuyển bài
+
   const handleNavigateToAlbum = (albumId: number) => {
     navigate(`/viewalbum/${albumId}`);
   };
 
+  // Lời chào theo thời gian
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Chào buổi sáng" : hour < 18 ? "Chào buổi chiều" : "Chào buổi tối";
+
+  // Phân loại các album đặc biệt của Tam Thái Tử
+  const featuredJackAlbum =
+    albums.find((a) => a.name.toLowerCase() === "tam thái tử") ||
+    albums.find((a) => a.name.toLowerCase().includes("tam thái tử")) ||
+    albums[0];
+
+  const featuredAlbums = albums.filter((alb) =>
+    alb.name.toLowerCase().includes("tam thái tử") ||
+    alb.name.toLowerCase().includes("chúng ta của tương lai") ||
+    alb.name.toLowerCase().includes("ai cũng phải bắt đầu") ||
+    alb.name.toLowerCase().includes("22 & đẹp") ||
+    alb.name.toLowerCase().includes("loichoi")
+  );
+
+  const quickPicks = albums.slice(0, 6);
+
   return (
-    <div className="space-y-8 bg-[#121212] text-white p-6">
+    <div className="space-y-8 bg-[#121212] text-white p-6 pb-28 min-h-screen">
       {error && (
         <p className="text-red-400 bg-red-900/50 p-3 rounded-lg mb-4">{error}</p>
       )}
-      {/* Khám phá Spotify Catalog & Video MV */}
-      {spotifyReleases.length > 0 && (
-        <section>
+
+      {/* 1. Spotify Spotlight Hero Banner - Album Tam Thái Tử (Jack - J97) */}
+      {featuredJackAlbum && (
+        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-amber-950 via-[#261c14] to-[#121212] border border-amber-600/30 p-6 md:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 group">
+          <div className="flex-1 space-y-4 text-center md:text-left z-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold tracking-wider uppercase">
+              <Sparkles size={14} className="animate-spin text-amber-400" />
+              Album Mới Ra Mắt • Jack - J97
+            </div>
+            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white drop-shadow-md">
+              {featuredJackAlbum.name}
+            </h1>
+            <p className="text-gray-300 text-sm md:text-base max-w-2xl leading-relaxed">
+              Album phòng thu chính thức từ nam ca sĩ Jack (J97) với 11 ca khúc mới mang âm hưởng ngũ cung dân gian kết hợp synth-wave hiện đại: <span className="text-amber-300 font-medium">Hoa Trong Đá, Người Dưng, Hào Hoa, Tam Thái Tử, Lưu Niên...</span>
+            </p>
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+              <button
+                onClick={() => handleNavigateToAlbum(featuredJackAlbum.id)}
+                className="px-6 py-3 rounded-full bg-[#1DB954] text-black font-bold flex items-center gap-2 hover:bg-[#1ed760] hover:scale-105 active:scale-95 transition shadow-lg shadow-green-950"
+              >
+                <PlayIcon size={20} className="fill-current" />
+                Khám Phá Album
+              </button>
+              <button
+                onClick={() => {
+                  const tamThaiTuSong = topSongs.find((s) => s.name.toLowerCase().includes("tam thái tử")) || topSongs[0];
+                  if (tamThaiTuSong) {
+                    handlePlaySong(tamThaiTuSong, true);
+                  }
+                }}
+                className="px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold flex items-center gap-2 backdrop-blur border border-white/10 transition hover:scale-105"
+              >
+                <Tv size={18} className="text-[#1DB954]" />
+                Xem MV "Tam Thái Tử"
+              </button>
+            </div>
+          </div>
+
+          <div
+            className="w-48 h-48 md:w-60 md:h-60 rounded-xl overflow-hidden shadow-2xl flex-shrink-0 cursor-pointer group-hover:scale-105 transition-transform duration-300 border-2 border-amber-500/30"
+            onClick={() => handleNavigateToAlbum(featuredJackAlbum.id)}
+          >
+            <img
+              src={getImageUrl(featuredJackAlbum.cover_image)}
+              alt={featuredJackAlbum.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.src = "/default-cover.png";
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 2. Quick Access Cards (Chào buổi sáng / Buổi tối) */}
+      <section>
+        <h2 className="text-2xl md:text-3xl font-extrabold mb-4 tracking-tight flex items-center gap-2">
+          {greeting}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {quickPicks.map((alb) => (
+            <div
+              key={alb.id}
+              onClick={() => handleNavigateToAlbum(alb.id)}
+              className="flex items-center bg-[#242424]/60 hover:bg-[#303030] rounded-md overflow-hidden transition-all duration-200 group cursor-pointer shadow border border-white/5"
+            >
+              <img
+                src={getImageUrl(alb.cover_image)}
+                alt={alb.name}
+                className="w-16 h-16 object-cover flex-shrink-0"
+                onError={(e) => {
+                  e.currentTarget.src = "/default-cover.png";
+                }}
+              />
+              <span className="font-semibold text-sm px-4 truncate flex-1 text-white">
+                {alb.name}
+              </span>
+              <button
+                className="h-10 w-10 mr-4 rounded-full bg-[#1DB954] text-black opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-200 transform translate-y-1 group-hover:translate-y-0 shadow-lg hover:scale-105"
+                title="Phát album"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNavigateToAlbum(alb.id);
+                }}
+              >
+                <PlayIcon size={20} className="fill-current ml-0.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 3. Section Đặc Biệt: Album Tam Thái Tử & Top Albums */}
+      {featuredAlbums.length > 0 && (
+        <section className="pt-2">
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#1DB954] text-black">
-                  Spotify
+                <span className="px-2 py-0.5 rounded text-xs font-extrabold bg-gradient-to-r from-amber-500 to-yellow-600 text-black">
+                  HOT ALBUMS
                 </span>
-                <h2 className="text-2xl md:text-3xl font-bold">Khám phá từ Spotify & Video MV</h2>
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                  Album Tam Thái Tử (Jack - J97) & Top Albums
+                </h2>
               </div>
               <p className="text-sm text-gray-400 mt-1">
-                Phát trực tuyến nhạc mới qua Spotify Web API và YouTube Player API
+                Các album nổi bật nhất: "Tam Thái Tử" - Jack J97, "Chúng Ta Của Tương Lai", "Ai Cũng Phải Bắt Đầu Từ Đâu Đó"...
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {featuredAlbums.map((album) => (
+              <div
+                key={album.id}
+                className="bg-[#181818] hover:bg-[#282828] p-4 rounded-xl transition-all duration-300 group cursor-pointer flex flex-col justify-between border border-transparent hover:border-white/10 shadow"
+                onClick={() => handleNavigateToAlbum(album.id)}
+              >
+                <div className="relative aspect-square w-full rounded-lg overflow-hidden mb-3 shadow-md">
+                  <img
+                    src={getImageUrl(album.cover_image)}
+                    alt={album.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    onError={(e) => {
+                      e.currentTarget.src = "/default-cover.png";
+                    }}
+                  />
+                  <button
+                    className="absolute bottom-3 right-3 h-11 w-11 bg-[#1DB954] text-black rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-200 shadow-xl hover:scale-105"
+                    title="Mở album"
+                  >
+                    <PlayIcon size={22} className="fill-current ml-0.5" />
+                  </button>
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-white truncate group-hover:text-[#1DB954] transition" title={album.name}>
+                    {album.name}
+                  </h3>
+                  <p className="text-xs text-gray-400 truncate mt-1" title={album.artist_name}>
+                    {album.artist_name}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 4. Khám phá từ Spotify Catalog & Video MV */}
+      {spotifyReleases.length > 0 && (
+        <section className="pt-2">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#1DB954] text-black flex items-center gap-1">
+                  <Radio size={12} />
+                  Spotify Web API
+                </span>
+                <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                  Mới Phát Hành Trên Spotify & MV
+                </h2>
+              </div>
+              <p className="text-sm text-gray-400 mt-1">
+                Phát trực tuyến các ca khúc mới nhất qua Spotify Web API và YouTube Player API
               </p>
             </div>
           </div>
@@ -157,13 +322,13 @@ const Home: React.FC = () => {
             {spotifyReleases.map((item) => (
               <div
                 key={item.id}
-                className="bg-[#181818] p-3 rounded-lg hover:bg-[#282828] transition-all group cursor-pointer flex flex-col justify-between"
+                className="bg-[#181818] p-3 rounded-xl hover:bg-[#282828] transition-all group cursor-pointer flex flex-col justify-between border border-transparent hover:border-white/5"
                 onClick={() => {
                   setSongList(spotifyReleases);
                   handlePlaySong(item, false);
                 }}
               >
-                <div className="relative aspect-square w-full rounded-md overflow-hidden mb-3">
+                <div className="relative aspect-square w-full rounded-lg overflow-hidden mb-3">
                   <img
                     src={item.image_url}
                     alt={item.name}
@@ -212,113 +377,169 @@ const Home: React.FC = () => {
         </section>
       )}
 
-      <section>
-        <h2 className="text-3xl font-bold mb-4">Danh sách các Albums</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {albums.map((album) => (
-            <div
-              key={album.id}
-              className="bg-[#181818] rounded-lg p-4 transition-all hover:bg-[#282828] cursor-pointer"
-              onClick={() => handleNavigateToAlbum(album.id)}
-            >
-              <div className="relative group">
-                <img
-                  src={`/uploads/albums/${album.cover_image}`}
-                  alt={album.name}
-                  className="w-full aspect-square object-cover rounded-md mb-3"
-                />
-                <button className="absolute bottom-3 right-3 h-12 w-12 bg-green-500 rounded-full flex items-center justify-center text-black opacity-0 group-hover:opacity-100 transition-opacity">
-                  <PlayIcon size={24} />
-                </button>
-              </div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-medium text-md truncate">{album.name}</h3>
-              </div>
-              <p className="text-sm text-gray-400">{album.artist_name}</p>
+      {/* 5. Bảng xếp hạng âm nhạc 2024 - 2026 */}
+      <section className="pt-2">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <Flame size={20} className="text-amber-500" />
+              <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+                Bảng Xếp Hạng Bài Hát Mới Nhất
+              </h2>
             </div>
-          ))}
+            <p className="text-sm text-gray-400 mt-1">
+              Top các ca khúc được nghe nhiều nhất và hỗ trợ stream trực tuyến
+            </p>
+          </div>
         </div>
-      </section>
-
-      <section>
-        <h2 className="text-3xl font-bold mb-4">Bảng xếp hạng âm nhạc</h2>
-        <div className="bg-[#181818] rounded-lg overflow-hidden">
+        <div className="bg-[#181818] rounded-xl overflow-hidden border border-[#282828] shadow-xl">
           {isLoading ? (
-            <p className="p-4 text-gray-400">Đang tải bảng xếp hạng...</p>
+            <p className="p-8 text-center text-gray-400">Đang tải bảng xếp hạng...</p>
           ) : topSongs.length === 0 ? (
-            <p className="p-4 text-gray-400">Không có bài hát nào trong bảng xếp hạng.</p>
+            <p className="p-8 text-center text-gray-400">Không có bài hát nào trong bảng xếp hạng.</p>
           ) : (
-            <div className="divide-y divide-[#282828]">
-              {topSongs.map((song, index) => {
+            <div className="divide-y divide-[#282828]/60">
+              {topSongs.slice(0, 15).map((song, index) => {
                 const songIsPremium = isPremiumSong(song);
+                const isLoved = lovedIds.has(String(song.id));
                 return (
                   <div
                     key={song.id}
-                    className="flex items-center p-4 hover:bg-[#282828] transition-all cursor-pointer"
+                    className="flex items-center p-3.5 hover:bg-[#282828] transition-all cursor-pointer group"
                     onClick={() => {
                       if (songIsPremium && !isUserPremiumAccount()) {
                         alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức.");
                         return;
                       }
-                      handlePlaySong(song);
+                      setSongList(topSongs);
+                      handlePlaySong(song, false);
                     }}
                   >
-                    <span className="w-12 text-lg font-bold text-gray-400">
+                    <span
+                      className={`w-10 text-center text-sm font-bold ${
+                        index === 0
+                          ? "text-yellow-400 text-base"
+                          : index === 1
+                          ? "text-gray-300 text-base"
+                          : index === 2
+                          ? "text-amber-600 text-base"
+                          : "text-gray-500"
+                      }`}
+                    >
                       #{index + 1}
                     </span>
-                    <div className="flex items-center flex-1 min-w-0">
-                      <div className="relative group flex-shrink-0">
+                    <div className="flex items-center flex-1 min-w-0 pr-4">
+                      <div className="relative group/cover flex-shrink-0 w-11 h-11 mr-3 rounded-md overflow-hidden shadow">
                         <img
                           src={song.image_url}
                           alt={song.name}
-                          className="w-12 h-12 object-cover rounded-md"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = "/default-cover.png";
+                          }}
                         />
-                        <button className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                          <PlayIcon size={20} className="text-green-500" />
+                        <button className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <PlayIcon size={18} className="text-[#1DB954] fill-current" />
                         </button>
                       </div>
-                      <div className="ml-4 min-w-0">
+                      <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-md truncate">{song.name}</h3>
+                          <h3 className="font-semibold text-sm truncate text-white group-hover:text-[#1DB954] transition">
+                            {song.name}
+                          </h3>
                           {songIsPremium && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
                               Premium
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-400 truncate">{song.artist}</p>
+                        <p className="text-xs text-gray-400 truncate mt-0.5">{song.artist}</p>
                       </div>
                     </div>
-                  <div className="w-24 text-sm text-gray-400 text-center">
-                    {formatDuration(song.duration)}
+
+                    <div className="w-24 text-xs text-gray-400 text-center hidden sm:block">
+                      {song.album || "Single"}
+                    </div>
+
+                    <div className="w-16 text-xs text-gray-400 text-right tabular-nums pr-4">
+                      {formatDuration(song.duration)}
+                    </div>
+
+                    <div className="flex items-center justify-end gap-1 flex-shrink-0">
+                      <button
+                        className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-[#333] transition"
+                        title="Xem MV (YouTube)"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSongList(topSongs);
+                          handlePlaySong(song, true);
+                        }}
+                      >
+                        <Tv size={16} />
+                      </button>
+                      <button
+                        className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-[#333] transition"
+                        title={isLoved ? "Xóa khỏi yêu thích" : "Yêu thích"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleLovedSong(song as any);
+                        }}
+                      >
+                        <Heart
+                          size={16}
+                          className={isLoved ? "fill-[#1DB954] text-[#1DB954]" : "text-gray-400"}
+                        />
+                      </button>
+                      <button
+                        className="text-gray-400 hover:text-gray-200 p-2 rounded-lg hover:bg-[#333] transition"
+                        title="Tải về"
+                        onClick={(e) => handleDownload(e, song)}
+                      >
+                        <CircleEllipsis size={18} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="w-24 text-center flex items-center justify-center gap-3">
-                    <button
-                      className="text-gray-400 hover:text-white transition p-1"
-                      title={lovedIds.has(song.id) ? "Xóa khỏi yêu thích" : "Yêu thích"}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleLovedSong(song);
-                      }}
-                    >
-                      <Heart
-                        size={18}
-                        className={lovedIds.has(song.id) ? "fill-[#1DB954] text-[#1DB954]" : "text-gray-400 hover:text-white"}
-                      />
-                    </button>
-                    <button
-                      className="text-gray-400 hover:text-gray-200 transition-colors p-1"
-                      title="Tải về"
-                      onClick={(e) => handleDownload(e, song)}
-                    >
-                      <CircleEllipsis size={20} />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
             </div>
           )}
+        </div>
+      </section>
+
+      {/* 6. Danh Sách Tất Cả Albums */}
+      <section className="pt-2">
+        <h2 className="text-2xl md:text-3xl font-extrabold mb-4 tracking-tight flex items-center gap-2">
+          <Disc size={22} className="text-[#1DB954]" />
+          Tất Cả Albums
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {albums.map((album) => (
+            <div
+              key={album.id}
+              className="bg-[#181818] rounded-xl p-4 transition-all hover:bg-[#282828] cursor-pointer group flex flex-col justify-between border border-transparent hover:border-white/5"
+              onClick={() => handleNavigateToAlbum(album.id)}
+            >
+              <div className="relative aspect-square w-full rounded-lg overflow-hidden mb-3 shadow">
+                <img
+                  src={getImageUrl(album.cover_image)}
+                  alt={album.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                  onError={(e) => {
+                    e.currentTarget.src = "/default-cover.png";
+                  }}
+                />
+                <button className="absolute bottom-3 right-3 h-11 w-11 bg-[#1DB954] rounded-full flex items-center justify-center text-black opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-200 shadow-xl hover:scale-105">
+                  <PlayIcon size={22} className="fill-current ml-0.5" />
+                </button>
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm truncate text-white group-hover:text-[#1DB954] transition" title={album.name}>
+                  {album.name}
+                </h3>
+                <p className="text-xs text-gray-400 truncate mt-1">{album.artist_name}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
     </div>

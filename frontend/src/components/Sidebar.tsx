@@ -161,14 +161,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isLoggedIn, user }) => {
             <NavLink
               to="/chat"
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition ${
+                `flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition ${
                   isActive
-                    ? "bg-[#1db954] text-black"
-                    : "hover:bg-gray-800 hover:text-white"
+                    ? "bg-[#1db954] text-black font-bold"
+                    : "hover:bg-gray-800 hover:text-white text-gray-300"
                 }`
               }
             >
-              <span>Chat</span>
+              <span>Chat & AI DJ</span>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#1DB954] text-black">
+                AI
+              </span>
             </NavLink>
           </li>
         </ul>

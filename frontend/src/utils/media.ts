@@ -14,3 +14,16 @@ export const getAudioUrl = (songUrl?: string | null): string => {
   }
   return `/audio/${clean}`;
 };
+
+export const getImageUrl = (imgUrl?: string | null): string => {
+  if (!imgUrl) return "/default-cover.png";
+  if (imgUrl.startsWith("http://") || imgUrl.startsWith("https://") || imgUrl.startsWith("data:")) {
+    return imgUrl;
+  }
+  const clean = imgUrl.replace(/^\/+/, "");
+  if (clean.startsWith("uploads/albums/")) {
+    return `/${clean}`;
+  }
+  return `/uploads/albums/${clean}`;
+};
+

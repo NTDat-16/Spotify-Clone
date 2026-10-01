@@ -3,7 +3,7 @@ import { API_ORIGIN } from "../config/api";
 import { PlayIcon, Clock, MoreHorizontal, Download } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAudio, isPremiumSong, isUserPremiumAccount } from "../AudioContext";
-import { getAudioUrl } from "../utils/media";
+import { getAudioUrl, getImageUrl } from "../utils/media";
 
 interface Song {
     id: number;
@@ -132,20 +132,23 @@ const ViewAlbum: React.FC = () => {
     const handlePlayAll = () => {
         if (albumData?.songs && albumData.songs.length > 0) {
             const isUserPremium = isUserPremiumAccount();
+            const formattedSongs = albumData.songs.map(song => ({
+                id: song.id,
+                name: song.name,
+                artist: song.artist_name,
+                album: albumData.name,
+                duration: song.duration,
+                song_url: song.song_url,
+                image_url: getImageUrl(song.album_img || albumData.cover_image),
+                premium: song.premium
+            }));
+            setSongList(formattedSongs);
+
             const firstPlayableSong = isUserPremium
-                ? albumData.songs[0]
-                : albumData.songs.find(song => !isPremiumSong(song));
+                ? formattedSongs[0]
+                : formattedSongs.find(song => !isPremiumSong(song));
             if (firstPlayableSong) {
-                handlePlaySong({
-                    id: firstPlayableSong.id,
-                    name: firstPlayableSong.name,
-                    artist: firstPlayableSong.artist_name,
-                    album: albumData.name,
-                    duration: firstPlayableSong.duration,
-                    song_url: firstPlayableSong.song_url,
-                    image_url: firstPlayableSong.album_img ? `/uploads/albums/${firstPlayableSong.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png'),
-                    premium: firstPlayableSong.premium
-                });
+                handlePlaySong(firstPlayableSong);
             } else {
                 alert('Tất cả bài hát trong album này đều yêu cầu Premium!');
             }
@@ -177,22 +180,28 @@ const ViewAlbum: React.FC = () => {
     }
 
     return (
-        <div className="bg-[#1a1a1a] text-white min-h-screen">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 flex items-center space-x-8 shadow-lg">
-                <div className="w-64 h-64 bg-[#282828] rounded-lg overflow-hidden shadow-xl transform transition-all hover:scale-105">
+        <div className="bg-[#1a1a1a] text-white min-h-screen pb-24">
+            <div className="bg-gradient-to-r from-emerald-800 via-teal-900 to-black p-8 flex flex-col md:flex-row items-center md:items-end space-y-6 md:space-y-0 md:space-x-8 shadow-2xl">
+                <div className="w-56 h-56 md:w-64 md:h-64 bg-[#282828] rounded-xl overflow-hidden shadow-2xl transform transition-all hover:scale-105 flex-shrink-0">
                     <img
-                        src={albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png'} 
+                        src={getImageUrl(albumData.cover_image)} 
                         alt={albumData.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                            e.currentTarget.src = "/default-cover.png";
+                        }}
                     />
                 </div>
 
-                <div className="flex-1">
-                    <h1 className="text-5xl font-bold mb-3">{albumData.name}</h1>
-                    <p className="text-gray-200 text-lg mb-2">
-                        Release Date: {new Date(albumData.created_at).toLocaleDateString('vi-VN')}
+                <div className="flex-1 text-center md:text-left">
+                    <span className="uppercase text-xs font-bold tracking-widest text-[#1DB954] mb-2 inline-block">
+                        Album Chính Thức
+                    </span>
+                    <h1 className="text-3xl md:text-5xl font-extrabold mb-3 tracking-tight">{albumData.name}</h1>
+                    <p className="text-gray-300 text-sm mb-2">
+                        Ngày phát hành: {new Date(albumData.created_at).toLocaleDateString('vi-VN')} • {albumData.songs?.length || 0} bài hát
                     </p>
-                    <p className="text-gray-200 text-xl font-medium">{albumData.artist_name}</p>
+                    <p className="text-white text-lg font-semibold">{albumData.artist_name}</p>
                 </div>
             </div>
 
@@ -230,6 +239,18 @@ const ViewAlbum: React.FC = () => {
                                         alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức.");
                                         return;
                                     }
+                                    const formattedSongs = albumData.songs.map(s => ({
+                                        id: s.id,
+                                        name: s.name,
+                                        artist: s.artist_name,
+                                        album: albumData.name,
+                                        duration: s.duration,
+                                        song_url: s.song_url,
+                                        image_url: getImageUrl(s.album_img || albumData.cover_image),
+                                        premium: s.premium
+                                    }));
+                                    setSongList(formattedSongs);
+
                                     handlePlaySong({
                                         id: song.id,
                                         name: song.name,
@@ -237,7 +258,7 @@ const ViewAlbum: React.FC = () => {
                                         album: albumData.name,
                                         duration: song.duration,
                                         song_url: song.song_url,
-                                        image_url: song.album_img ? `/uploads/albums/${song.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png'),
+                                        image_url: getImageUrl(song.album_img || albumData.cover_image),
                                         premium: song.premium
                                     });
                                 }}
@@ -245,9 +266,12 @@ const ViewAlbum: React.FC = () => {
                                 <div className="col-span-1 text-gray-400">{index + 1}</div>
                                 <div className="col-span-5 flex items-center gap-3">
                                     <img
-                                        src={song.album_img ? `/uploads/albums/${song.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png')}
+                                        src={getImageUrl(song.album_img || albumData.cover_image)}
                                         alt={song.name}
-                                        className="w-12 h-12 rounded-md object-cover"
+                                        className="w-12 h-12 rounded-md object-cover flex-shrink-0"
+                                        onError={(e) => {
+                                            e.currentTarget.src = "/default-cover.png";
+                                        }}
                                     />
                                     <div>
                                         <div className="flex items-center gap-3">
