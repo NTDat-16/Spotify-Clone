@@ -10,7 +10,9 @@ export interface GeminiChatMessage {
 }
 
 export const GEMINI_API_KEY =
-  (import.meta.env.VITE_GEMINI_API_KEY as string) || "";
+  (import.meta.env.GEMINI_API_KEY as string) ||
+  (import.meta.env.VITE_GEMINI_API_KEY as string) ||
+  "";
 
 const getGeminiEndpoint = () =>
   `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
