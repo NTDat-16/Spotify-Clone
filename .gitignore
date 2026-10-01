@@ -1,26 +1,103 @@
-# Python
+# ==============================================================================
+# Environment & Secret Configuration Files (DO NOT COMMIT)
+# ==============================================================================
+.env
+.env.*
+*.env
+*.env.local
+*.local
+credentials.json
+*.credentials
+
+# Keep example templates committed as reference
+!.env.example
+!*/.env.example
+
+# ==============================================================================
+# Python & Django
+# ==============================================================================
 __pycache__/
+*/__pycache__/
+*/**/__pycache__/
 *.py[cod]
+*$py.class
+*.pyd
+*.so
+.Python
+
+# Django generated static & media
+staticfiles/
+media/
+backend/staticfiles/
+
+# SQLite databases & local dumps
 *.sqlite3
+*.db
+db.sqlite3
+data.sql
+
+# Testing & Linting
 .pytest_cache/
 .mypy_cache/
+.coverage
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
 
-# Virtual environments
+# ==============================================================================
+# Virtual Environments
+# ==============================================================================
 venv/
 .venv/
+env/
+ENV/
 backend/venv/
+env.bak/
+venv.bak/
 
-# JavaScript
+# ==============================================================================
+# Node.js & Frontend (Vite, React)
+# ==============================================================================
 node_modules/
 frontend/node_modules/
 dist/
 frontend/dist/
+dist-ssr/
 
-# Secrets and local environment
-.env
-.env.*
-!.env.example
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
 
-# Django generated files
-staticfiles/
-media/
+# ==============================================================================
+# Vercel CLI (Local project link & deployment cache)
+# ==============================================================================
+.vercel/
+
+# ==============================================================================
+# IDEs, Code Editors & OS Files
+# ==============================================================================
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.sublime-project
+*.sublime-workspace
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini

@@ -10,9 +10,11 @@ import {
   VolumeIcon,
   ClockIcon,
   MicIcon,
+  Heart,
 } from "lucide-react";
 import SleepTimer from "./SleepTimer";
 import LyricsModal from "./LyricsModal";
+import { isSongLoved, toggleLovedSong } from "../services/favorites";
 
 const MusicPlayer: React.FC = () => {
   const {
@@ -37,6 +39,23 @@ const MusicPlayer: React.FC = () => {
   const [showSleepTimer, setShowSleepTimer] = useState(false);
   const [showLyric, setShowLyric] = useState(false)
   const [timerRemaining, setTimerRemaining] = useState<number | null>(null);
+  const [isLoved, setIsLoved] = useState(false);
+
+  useEffect(() => {
+    if (currentSong) {
+      setIsLoved(isSongLoved(currentSong.id));
+    }
+  }, [currentSong]);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      if (currentSong) {
+        setIsLoved(isSongLoved(currentSong.id));
+      }
+    };
+    window.addEventListener("loved-songs-updated", handleUpdate);
+    return () => window.removeEventListener("loved-songs-updated", handleUpdate);
+  }, [currentSong]);
 
   // Lưu âm lượng vào localStorage và cập nhật audio
   useEffect(() => {
@@ -174,10 +193,25 @@ const MusicPlayer: React.FC = () => {
             e.currentTarget.src = "/default-cover.png";
           }}
         />
-        <div>
-          <h4 className="text-sm font-medium">{currentSong.name}</h4>
-          <p className="text-xs text-gray-400">{currentSong.artist}</p>
+        <div className="min-w-0">
+          <h4 className="text-sm font-medium truncate">{currentSong.name}</h4>
+          <p className="text-xs text-gray-400 truncate">{currentSong.artist}</p>
         </div>
+        <button
+          onClick={() => {
+            if (currentSong) {
+              const newState = toggleLovedSong(currentSong);
+              setIsLoved(newState);
+            }
+          }}
+          title={isLoved ? "Xóa khỏi bài hát yêu thích" : "Lưu vào bài hát yêu thích"}
+          className="ml-2 text-gray-400 hover:text-white transition flex-shrink-0"
+        >
+          <Heart
+            size={18}
+            className={isLoved ? "fill-[#1DB954] text-[#1DB954]" : "text-gray-400 hover:text-white"}
+          />
+        </button>
       </div>
 
       {/* Điều khiển phát nhạc */}

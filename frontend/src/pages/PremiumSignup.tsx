@@ -124,8 +124,9 @@ const PremiumSignup: React.FC<PremiumSignupProps> = ({ user, setUser }) => {
   }, [user, navigate]);
 
   useEffect(() => {
+    const paypalClientId = import.meta.env.VITE_PAYPAL_CLIENT_ID || "AY5SLnZXMLzSQwqlHiq1fI3x5HhGR994zmFQqXxUOkFng9WV50Lg3hZerAv9pa5NFvmgLliOqTTowgmW";
     const script = document.createElement("script");
-    script.src = `https://www.paypal.com/sdk/js?client-id=AY5SLnZXMLzSQwqlHiq1fI3x5HhGR994zmFQqXxUOkFng9WV50Lg3hZerAv9pa5NFvmgLliOqTTowgmW&currency=USD`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalClientId}&currency=USD`;
     script.async = true;
     script.onload = () => {
       if (window.paypal) {
@@ -160,7 +161,7 @@ const PremiumSignup: React.FC<PremiumSignupProps> = ({ user, setUser }) => {
               try {
                 const response = await axios.post(
                   `${API_ORIGIN}/api/paypal/execute/`,
-                  { paymentId: data.orderID, PayerID: data.payerID },
+                  { paymentId: data.orderID, PayerID: data.payerID, user_id: user.id },
                   { 
                     headers: { "Content-Type": "application/x-www-form-urlencoded" },
                     withCredentials: true,

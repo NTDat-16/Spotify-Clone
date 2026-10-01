@@ -1,0 +1,739 @@
+[
+{
+  "model": "app.user",
+  "pk": 1,
+  "fields": {
+    "username": "Dương Thị Hoài Nhi",
+    "email": "nhihoai@gmail.com",
+    "password_hash": "123456",
+    "created_at": "2025-04-19T16:31:25.537Z",
+    "status": 1,
+    "isPremium": false
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 1,
+  "fields": {
+    "name": "Tùng Dương",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 2,
+  "fields": {
+    "name": "Sơn Tùng MTP",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 3,
+  "fields": {
+    "name": "AMEE",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 4,
+  "fields": {
+    "name": "Hoàng Dũng",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 5,
+  "fields": {
+    "name": "Pháo",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 6,
+  "fields": {
+    "name": "JSOL",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 7,
+  "fields": {
+    "name": "Hiền Hồ",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 8,
+  "fields": {
+    "name": "ERIK",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 9,
+  "fields": {
+    "name": "Han Sara",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 10,
+  "fields": {
+    "name": "Suni Hạ Linh",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 11,
+  "fields": {
+    "name": "Quân A.P",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 12,
+  "fields": {
+    "name": "Hoàng Thùy Linh",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 13,
+  "fields": {
+    "name": "MONO",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 14,
+  "fields": {
+    "name": "tlinh",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 15,
+  "fields": {
+    "name": "Obito",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 16,
+  "fields": {
+    "name": "HIEUTHUHAI",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 17,
+  "fields": {
+    "name": "Wren Evans",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 18,
+  "fields": {
+    "name": "Orange",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 19,
+  "fields": {
+    "name": "Xesi",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 20,
+  "fields": {
+    "name": "Ngô Lan Hương",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 21,
+  "fields": {
+    "name": "Bray",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 22,
+  "fields": {
+    "name": "Jack – J97",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 23,
+  "fields": {
+    "name": "Hà Anh Tuấn",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 24,
+  "fields": {
+    "name": "Dương Domic",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 25,
+  "fields": {
+    "name": "Bùi Trường Linh",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 26,
+  "fields": {
+    "name": "Noo Phước Thịnh",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 27,
+  "fields": {
+    "name": "Phan Mạnh Quỳnh",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 28,
+  "fields": {
+    "name": "Ali Hoàng Dương",
+    "status": 1
+  }
+},
+{
+  "model": "app.artist",
+  "pk": 29,
+  "fields": {
+    "name": "Phan Mạnh Quỳnh",
+    "status": 1
+  }
+},
+{
+  "model": "app.album",
+  "pk": 1,
+  "fields": {
+    "name": "Khát Vọng Tuổi Trẻ & Một Vòng Trái Đất",
+    "created_at": "2025-04-19",
+    "artist": 1,
+    "cover_image": "tungduong.jfif",
+    "status": 1
+  }
+},
+{
+  "model": "app.album",
+  "pk": 2,
+  "fields": {
+    "name": "Making My Way",
+    "created_at": "2025-04-27",
+    "artist": 2,
+    "cover_image": "sontung.png",
+    "status": 1
+  }
+},
+{
+  "model": "app.album",
+  "pk": 3,
+  "fields": {
+    "name": "MộngMeea",
+    "created_at": "2025-04-27",
+    "artist": 3,
+    "cover_image": "amee.jpg",
+    "status": 1
+  }
+},
+{
+  "model": "app.album",
+  "pk": 4,
+  "fields": {
+    "name": "Mixtape ERIK",
+    "created_at": "2025-04-27",
+    "artist": 8,
+    "cover_image": "Erik.jpg",
+    "status": 1
+  }
+},
+{
+  "model": "app.album",
+  "pk": 5,
+  "fields": {
+    "name": "Dữ Liệu Quý (2024)",
+    "created_at": "2025-04-27",
+    "artist": 24,
+    "cover_image": "duongdominic.jpg",
+    "status": 1
+  }
+},
+{
+  "model": "app.album",
+  "pk": 6,
+  "fields": {
+    "name": "Từng Ngày Như Mãi Mãi ",
+    "created_at": "2025-04-27",
+    "artist": 25,
+    "cover_image": "buitruonglinh.jfif",
+    "status": 1
+  }
+},
+{
+  "model": "app.album",
+  "pk": 7,
+  "fields": {
+    "name": "Em Đã Thương Người Ta Hơn Anh",
+    "created_at": "2025-04-27",
+    "artist": 26,
+    "cover_image": "noophuocthinh.jpg",
+    "status": 1
+  }
+},
+{
+  "model": "app.album",
+  "pk": 8,
+  "fields": {
+    "name": "Khi người mình yêu khóc",
+    "created_at": "2025-04-27",
+    "artist": 27,
+    "cover_image": "phanmanhquynh.jpg",
+    "status": 1
+  }
+},
+{
+  "model": "app.album",
+  "pk": 9,
+  "fields": {
+    "name": "Điều Cha Chưa Nói",
+    "created_at": "2025-04-27",
+    "artist": 28,
+    "cover_image": "alihoangduong.jfif",
+    "status": 1
+  }
+},
+{
+  "model": "app.song",
+  "pk": 1,
+  "fields": {
+    "name": "Tái Sinh",
+    "artist": 1,
+    "album": 1,
+    "duration": 288,
+    "song_url": "taisinh.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 20,
+    "lyrics": "Cơn mưa rơi tưới mát tâm hồn, nhẹ nhàng và, cơn mưa như đang tái sinh ta.Cơn mưa mang em đến bên đời dịu dàng và, sau cơn mưa tim cũng nở hoa.Bầu trời xanh đến lạ, nắng tưới lên hàng lá non, ban mai ôm lấy tâm hồn, từ khi em ghé qua.Và tình yêu bắt đầu, khi ta nhìn vào mắt nhau, anh thấy tim mình, tái sinh sau nhiều cơn đau.Chìm vào trong ánh mắt đắm đuối, anh ngỡ mình như đang đôi mươi, người làm anh biết yêu đắm say như tình đầu.Một vì sao sáng giữa bóng tối, ban mai về sau cơn mưa rơi, tái sinh anh từ đống tro tàn tình yêu.Chỉ cần một ánh mắt, mọi muộn phiền chợt biến mất, dịu dàng và ngây thơ, như tái sinh linh hồn.Thì thầm vào bên tai, chẳng buồn nào là mãi mãi, cũng sẽ đến khi mờ phai.Bầu trời xanh đến lạ, nắng tưới lên hàng lá non, ban mai ôm lấy tâm hồn, từ khi em ghé qua.Và tình yêu bắt đầu, khi ta nhìn vào mắt nhau, anh thấy tim mình, tái sinh sau nhiều cơn đau.Chìm vào trong ánh mắt đắm đuối, anh ngỡ mình như đang đôi mươi, người làm anh biết yêu đắm say như tình đầu.Một vì sao sáng giữa bóng tối, ban mai về sau cơn mưa rơi, tái sinh anh từ đống tro tàn tình yêu"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 2,
+  "fields": {
+    "name": "Sự Nghiệp Chương",
+    "artist": 1,
+    "album": 1,
+    "duration": 200,
+    "song_url": "htptrtnfix.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 4,
+    "lyrics": "Giọt nước mắt vướng trên khuôn nhạc.Tưởng ngọc ngà đá quý, anh yêu bạc.Thấy tiếng vang oanh tạc.Nàng đành lòng lấy bức tranh sơn vàng.Vốn có một vườn hồng.Chuyện tình yêu có một người trồng.Người tôi yêu xa hoa, trăng hoa, tính đào hoa.Tiếc thay bản nhạc tình.Vướng hay cách khác thì em đây gọi anh là chướng.Chướng ngại, chướng mắt và chướng tai.Ngủ nướng cụ thể là nướng khoai.Làm nhạc *** như này là quá nice rồi.Em nào nhân viên, em nào đối tác?.Con lợn này chối ác.Họ đâu biết em là ai.Cô ta biết em là ai.Chỉ mình anh không biết em là ai cả.Tối đó.Anh ta đã dắt cô ta vào trong căn phòng nhỏ đóng kín.Nghe thôi cũng biết câu chuyện xảy ra hệt tại trong phim.Nô đùa trong trái tim ta.Hệt tại tối đó.Điều đáng nói hơn bây giờ.Giọt nước mắt vướng trên khuôn nhạc.Tưởng ngọc ngà đá quý, anh yêu bạc.Thấy tiếng vang oanh tạc.Nàng đành lòng lấy bức tranh sơn vàng.Vốn có một vườn hồng.Chuyện tình yêu có một người trồng.Người tôi yêu xa hoa, trăng hoa, tính đào hoa.Tiếc thay bản nhạc tình.Tối đó.Anh ta có thiết tha hương mùi hoa em để lại.Tối đó.Anh ta đâu biết hái một nhành hoa em đặt lại.Tối đó.Trên đầu bao đám mây đen gầm gừ.Kéo tới.Điều đáng nói hơn bây giờ.Trông em như kiểu model, Prada, M.T.F ex xa ra.Eyeliner kiểu ra ta ta.Đêm nay quẩy cha cha cha.Trên răng dưới chàng không có gì.Phiền lo thêm gì ngoài câu sorry.YSL em bo thêm cả kí.Nếu như chàng bỏ phí cứ đem trợ lí anh cho đi.Một nhành em hồng em để lại từ biệt.Những món quà người khác xin lỗi em từ khước.Một bài nhạc để thể hiện lòng thành.Những bài nhạc nào khác tương tự em dừng bước.Em không tin nhưng điều đó là sự thật.Peter Pan thì có nghĩa là không bao giờ lớn được.Mai ra đi tên em đẹp cho đời.Còn tên anh thì gây hại cho Tổ quốc và cả nước nhà.Anh ơi em bảo anh này:\"Yêu đương như thế thì có ngày tao tát cho một phát là đi vào viện Răng-Hàm-Mặt, khoa Chấn thương-Chỉnh hình, răng môi mày lẫn lộn trộn vào với nhau.Tao ra đi trong yên lặng thì mày khôn hồn mày sống cho đàng hoàng tử tế.Đừng có để tao gặp cái mặt mày thêm một lần nào nữa\".Giọt nước mắt vướng trên khuôn nhạc.Tưởng ngọc ngà đá quý, anh yêu bạc.Thấy tiếng vang oanh tạc.Nàng đành lòng lấy bức tranh sơn vàng.Vốn có một vườn hồng.Chuyện tình yêu có một người trồng.Người tôi yêu xa hoa, trăng hoa, tính đào hoa.Tiếc thay bản nhạc tình.Tối đó.Anh ta có thiết tha hương mùi hoa em để lại.Tối đó.Anh ta đâu biết hái một nhành hoa em đặt lại.Tối đó.Trên đầu bao đám mây đen gầm gừ.Kéo tới.Điều đáng nói hơn bây giờ.Em.Em phải tin anh chứ.Đây chỉ là công việc của anh thôi.Chứ anh lúc nào cũng dành tình cảm cho em, lúc nào cũng nghĩ về em mà.Còn nếu như bây giờ em không muốn nói chuyện ấy.Thì thôi.Em vui là được"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 3,
+  "fields": {
+    "name": "Hãy Trao Cho Anh",
+    "artist": 1,
+    "album": 2,
+    "duration": 245,
+    "song_url": "haytraochoanh.mp3",
+    "status": 1,
+    "premium": 1,
+    "play_count": 0,
+    "lyrics": null
+  }
+},
+{
+  "model": "app.song",
+  "pk": 4,
+  "fields": {
+    "name": "Sóng Gió",
+    "artist": 1,
+    "album": 1,
+    "duration": 254,
+    "song_url": "songgio.mp3",
+    "status": 1,
+    "premium": 1,
+    "play_count": 0,
+    "lyrics": null
+  }
+},
+{
+  "model": "app.song",
+  "pk": 5,
+  "fields": {
+    "name": "Cơn Mưa Ngang Qua",
+    "artist": 2,
+    "album": 2,
+    "duration": 288,
+    "song_url": "conmuangangqua.mp4",
+    "status": 1,
+    "premium": 0,
+    "play_count": 20,
+    "lyrics": "Cơn mưa ngang qua...Cơn mưa đi ngang qua...Đừng làm rơi thêm, thêm, thêm, nhiều giọt lệ uh...uh...Còn đâu đây bao câu ca anh tặng em.Tình yêu em mang cuốn lấp đi bao nhiêu câu ca.Và còn lại đây, đôi môi đau thương trong màn đêm.Phải lẻ loi, gồng mình bước qua niềm đau khi em rời xa...Cơn mưa rồi lại thêm, lại thêm, lại thêm.Xé đi không gian ngập tràn nụ cười...Nhìn lại nơi đây, bao kỉ niệm giờ chìm xuống dưới hố sâu vì em...Chính em đã đổi thay.Và đôi bàn tay ấm êm, ngày nào còn lại giữ.Vì em...Vì em...Vì em đã xa rồi, tình anh chìm trong màn đêm.Là vì em đã quên rồi, tình anh chỉ như giấc mơ.Em bước đi rồi...Ôi bao cơn mưa.Em bước đi rồi...Xin hãy xua tan đi em, bóng dáng hình em. Em đã mãi rời xa...My girl...Em quên đi bao nhiêu.My girl...Em quên đi bao lâu.My girl...Em quên đi cuộc tình mà anh trao em, thôi thôi em đi đi đã hết rồi...!My girl...Em quên đi bao nhiêu.My girl...Em quên đi bao lâu.My girl...Em quên đi cuộc tình...Em quên..quên..quên.Cơn mưa ngang qua mang em đi xa.Cơn mưa ngang qua khiến em nhạt nhòa.Chẳng một lời chào người vội rời bỏ đi không chia li cho con tim anh thêm bao yếu mềm...!Cơn mưa ngang qua cuốn đi bao yêu thương.Cơn mưa ngang qua khiến con tim mất phương hướng...Cơn mưa kia nặng hạt, ôi mưa thêm nặng hạt..Em đã rời xa đôi bàn tay trong con tim của anh.Buông lơi bàn tay em đi, em đi rời xa bên tôi người ơi.Và buông lơi giấc mơ em cho, em cho con tim tôi đau biết mấy...Tôi cũng đã đến hồi kết..thật rồi mà người!Tôi cũng đã đến hồi kết..Đừng nhìn làm gì!Anh sẽ quên đi một ai, ai, ai, và rồi làm ngơ, ngơ, ngơ, uhVì em đã xa rồi, tình anh chìm trong màn đêm.Là vì em đã quên rồi, tình anh chỉ như giấc mơ.Em bước đi rồi...Ôi bao cơn mưa.Em bước đi rồi...Xin hãy xua tan đi em, bóng dáng hình em. Em đã mãi rời xa...My girl...Em quên đi bao nhiêu.My girl...Em quên đi bao lâu.My girl...Em quên đi cuộc tình mà anh trao em, thôi thôi em đi đi đã hết rồi...!My girl...Em quên đi bao nhiêu.My girl...Em quên đi bao lâu.My girl...Em quên đi cuộc tình...Em quên..quên..quên.Và rồi em đi qua bước qua.Ở lại chốn đây với bao u buồn.Để rồi tháng trôi qua, rồi năm trôi qua, thoáng qua..oh...oh..oh..!!!!Nụ cười em đang ở đâu, người ơi..Ở đâu..?Và bờ môi em đang ở đâu, anh tìm..Lục tìm mà không thấy.. Nụ cười em..Người hãy nói trả lời đi..Vì sao em đi đi quên đi bao nhiêu giấc mơ...Bên anh xưa kia..???Cơn mưa vẫn rơi.. rơi rơi..Cơn cơn mưa vẫn rơi... rơi rơi..Cơn cơn mưa vẫn rơi... rơi rơi..Cơn cơn mưa vẫn rơi... rơi rơi..Cơn mưa vẫn rơi.. rơi rơi..Cơn cơn mưa vẫn rơi... rơi rơi..Cơn cơn mưa vẫn rơi... rơi rơi..Cơn cơn mưa vẫn rơi... rơi rơi..My girl...Em quên đi bao nhiêu.My girl...Em quên đi bao lâu.My girl...Em quên đi cuộc tình mà anh trao em,thôi thôi em đi đi đã hết rồi....!My girl...Em quên đi bao nhiêu.My girl...Em quên đi bao lâu.My girl...Em quên đi cuộc tình...Em quên..quên..quên...Em quên mất rồi...!!!!"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 6,
+  "fields": {
+    "name": "Tháng 4 là lời nói dối của em",
+    "artist": 23,
+    "album": 1,
+    "duration": 310,
+    "song_url": "ThangTuLaLoiNoiDoiCuaEm.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 3,
+    "lyrics": "Mùa xuân có em như chưa bắt đầu. Và cơn gió như khẽ mơn man lay từng nhành hoa rơi. Em đã bước tới như em đã từng. Chạy trốn với anh trên cánh đồng xanh. Khúc nhạc hòa cùng nắng chiều dịu dàng để mình gần lại mãi. Nói lời thì thầm những điều thật thà đã giữ trong tim mình. Những chặng đường dài ngỡ mình mệt nhoài đã một lần gục ngã. Tháng tư có em ở đây nhìn tôi mỉm cười. Những cánh hoa phai tàn thật nhanh, em có bay xa, em có đi xa mãi. Tháng tư đôi khi thật mong manh, để mình nói ra những câu chân thật. Giá như tôi một lần tin em, cô gái tôi thương nay hóa theo mây gió. Để lại tháng tư ở đó. Mùa xuân mất em như đã bắt đầu. Và cơn gió như khẽ vô tình lay từng nhành hoa rơi. Em vội xa khuất theo tia nắng chiều. Để lại dấu chân giữa cánh đồng xanh. Khúc nhạc thầm lặng giữa chiều muộn màng, để mình gần lại mãi. Nói lời thì thầm những điều thật thà đã giữ trong tim mình. Những chặng đường dài ngỡ mình mệt nhoài, đã một lần gục ngã. Tháng tư ánh sao phía xa bỗng nhiên dần tàn. Những cánh hoa phai tàn thật nhanh, em có bay xa, em có đi xa mãi. Tháng tư đôi khi thật mong manh để mình nói ra những câu chân thật. Giá như tôi một lần tin em, cô gái tôi thương, nay hóa theo mây gió. Để lại tháng tư ở đó. Và tôi sẽ sống như những gì em thầm mơ. Và tôi sẽ bước tiếp trên con đường mình đã chọn. Và khi tôi chết sẽ mỉm cười khi gặp em. Khẽ chào cô gái tháng tư của tôi. Nhưng cánh hoa phai tàn thật nhanh, em đã bay xa, em đã đi xa mãi. Tháng tư đôi khi thật mong manh để mình nói ra. Giá như tôi một lần tin em, cô gái tôi thương, nay hóa theo mây gió. Để lại tháng tư xa mãi, để lại tháng tư, mình anh."
+  }
+},
+{
+  "model": "app.song",
+  "pk": 7,
+  "fields": {
+    "name": "Một Vòng Việt Nam",
+    "artist": 1,
+    "album": 1,
+    "duration": 277,
+    "song_url": "motvongvietnam.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 4,
+    "lyrics": "Ai đã *** vào những thân trẻ. Bao ký ức xót xa hỡi mẹ. Ai đã ru ngủ những gióng sông. Cùng em á chạy về hướng đường. Còn đã về hình hài quê hương. Qua những khúc hát ru của mẹ. Còn bao nhiêu lời ru con vẫn chưa được nghe. Việt Nam quê hương ta đẹp lắm. Mặc lửa khói dày xeo tháng năm. Người Việt Nam ra nâu mắt đến. Thạo thương bất khuất như cành sen. Việt Nam ơi quê hương ta ơi. Biển lúa chiên vàng thơm ngát trời. Vọng tiếng ai hò vì nhớ con đỏ ai ơi. Dậy với tôi nào. Dạo với tôi nào. Dạo khắp một phòng Việt Nam. Nhìn non sông trời vẫn đất vỡ. Cùng với tôi nào. Dạo với tôi nào. Dạo khắp một phòng Việt Nam. Come with me, we travel around Vietnam. Việt Nam quê hương ta đẹp lắm. Mặc lửa khói dày xeo tháng năm. Người Việt Nam ra nâu mắt đến. Thạo thương bất khuất như cành sen. Việt Nam ơi quê hương ta ơi. Biển lúa chiên vàng thơm ngát trời. Vọng tiếng ai hò vì nhớ con đỏ ai ơi. Dậy với tôi nào. Dạo với tôi nào. Dạo khắp một phòng Việt Nam. Nhìn non sông trời vẫn đất vỡ. Cùng với tôi nào. Dạo với tôi nào. Dạo khắp một phòng Việt Nam. Come with me, we travel around Vietnam. Dậy với tôi nào. Dạo với tôi nào. Dạo khắp một phòng Việt Nam. Nhìn non sông trời vẫn đất vỡ. Cùng với tôi nào. Dạo với tôi nào. Dạo khắp một phòng Việt Nam. Come with me, we travel around Vietnam. Come with me, we travel around Vietnam"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 8,
+  "fields": {
+    "name": "Dù Cho Tận Thế",
+    "artist": 8,
+    "album": 4,
+    "duration": 233,
+    "song_url": "DuChoTanThe.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 2,
+    "lyrics": null
+  }
+},
+{
+  "model": "app.song",
+  "pk": 9,
+  "fields": {
+    "name": "Mất Kết Nôi",
+    "artist": 24,
+    "album": 5,
+    "duration": 207,
+    "song_url": "MatKetNoi.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 1,
+    "lyrics": "Nỗi nhớ em trong đêm thật dài. Thêm lý do cho anh tồn tại. Để lại chạm vào bờ môi ấy dịu dàng. Lời thì thầm ngọt ngào bên tai. Ta mất nhau thật rồi em ơi. Tan vỡ hai cực đành chia đôi. Anh sẽ luôn ghi nhớ em trong từng tế bào. Vậy mà dừng lại như thế sao. Chẳng cần vật chất, chẳng cần Spotlight. Chỉ cần vài nốt nhạc hòa cùng cây mic. Từ chối cuộc vui đi về một nơi xa. Vì bận ngồi đây thả thêm một vài câu ca. Giữa đời có được mấy. D O M I C. Nhưng có lẽ giờ này, em đã ngủ say. Còn anh thì vẫn mang. Nỗi nhớ em trong đêm thật dài. Thêm lý do cho anh tồn tại. Để lại chạm vào bờ môi ấy dịu dàng. Lời thì thầm ngọt ngào bên tai. Ta mất nhau thật rồi em ơi. Tan vỡ hai cực đành chia đôi. Anh sẽ luôn ghi nhớ em trong từng tế bào. Vậy mà dừng lại như thế sao. Cuộc gọi nhỡ cho em hàng đêm đến tận 200 lần. Dòng ký ức trong em về anh bây giờ đang phai dần. Quay gót rời đi, không để lại gì. Bay vút qua tầm tay. Sao còn vương vấn để làm gì? Bọn mình kết thúc thật rồi, hết sức thật rồi. Phải không em ơi? Chuyện tình có khúc phải lòng, có lúc phải rời. Vậy đến lúc rồi. Và có lẽ giờ này, em đã ngủ say. Còn anh thì vẫn mang. Nỗi nhớ em trong đêm thật dài. Thêm lý do cho anh tồn tại. Để lại chạm vào bờ môi ấy dịu dàng. Lời thì thầm ngọt ngào bên tai. Ta mất nhau thật rồi em ơi. Tan vỡ hai cực đành chia đôi. Anh sẽ luôn ghi nhớ em trong từng tế bào. Vậy mà dừng lại như thế sao. Trong anh hay là trong em đã đổi thay bao nhiêu suy nghĩ. Yêu thương nay còn đâu. Anh còn yêu, nghe hơi vô lý. Ta mất kết nối thật rồi. Đã mất kết nối thật rồi em ơi. Trong anh hay là trong em đã đổi thay bao nhiêu suy nghĩ. Yêu thương nay còn đâu. Anh còn yêu, nghe hơi vô lý. Ta mất kết nối thật rồi. Đã mất kết nối thật rồi em ơi. Ta mất nhau thật rồi em ơi. Tan vỡ hai cực đành chia đôi. Anh sẽ luôn ghi nhớ em trong từng tế bào. Vậy mà dừng lại như thế sao"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 10,
+  "fields": {
+    "name": "Giờ Thì",
+    "artist": 25,
+    "album": 6,
+    "duration": 234,
+    "song_url": "giothi.mp4",
+    "status": 1,
+    "premium": 0,
+    "play_count": 2,
+    "lyrics": "Mỉm cười mỗi lúc thấy tiếng nói em ngay bên cạnh.Giữa tiếng pháo đón mưa đêm thêm lạnh.Hai ta trao nụ hôn êm đềm nhẹ thắp ánh giao thừa lên.Cùng vượt qua những sóng gió khó khăn bao cơ hội.Cũng đã muốn nói ra câu yêu rồi.Tay trong tay cùng nhau đi về.Nhẹ bước trong tim nửa kia.Rồi tháng ngày phai nhạt cho ký ức phôi pha.Mình lỡ để danh vọng đứng giữa chúng ta.Cho anh quay lại khoảnh khắc ấy để anh cố níu tay em lại.Giờ thì mình đã không còn thương.Không còn đau.Không còn vì nhau nữa.Cũng đã từng mang nhiều điều mong ước nhưng đành xa xôi.Bỏ quên những dấu yêu bao ngày ở lại đằng sau.Ta bước tiếp trên đoạn đường chẳng có nhau.Nỗi đau ấy rồi sẽ thay bằng niềm hạnh phúc của riêng mỗi người.Rồi mình sẽ trưởng thành hơn kiên cường hơn không còn như lúc trước.Em sẽ dần quên từng đêm khóc nấc trên đôi vai này.Ngày em có đến bên ai trong đời.Thật tâm vẫn chúc em luôn vui cười.Vì anh yêu em rất nhiều,chỉ là chúng ta chọn rời xa.Dù sao hai ta cũng đã dành trọn cho nhau tất cả từng lời đậm sâu thế là đủ rồi.Một lần anh không hối tiếc vì dù gì anh cũng biết sẽ chẳng thể luôn mơ về em mãi.Vậy nên anh thôi cố chấp chỉ đứng phía xa để ôm trọn bầu trời đêm đẹp như mắt em ngày đầu khi em nói câu yêu anh"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 11,
+  "fields": {
+    "name": "Viết Tiếp Câu Chuyện Hòa Bình",
+    "artist": 1,
+    "album": 1,
+    "duration": 365,
+    "song_url": "VietTiepCauChuyenHoaBinh.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 1,
+    "lyrics": "Cha ông ta ngày xưa ngã xuống để cho đời ta ngày sau đổi lấy hoà bình. Giữa khói binh, ai cũng nguyện lòng hy sinh. Xin tri ân những người chiến sĩ, quên đi niềm riêng, quên đi cả bản thân mình. Cuộn chảy trong lòng một dòng máu nóng, dòng máu Lạc Hồng. Tạ ơn những người gìn giữ nước non Đại Việt nghìn năm trước. Tạ ơn người Cha già của chúng ta trên con đường cứu nước.ĐỂ CHO ĐẤT NƯỚC YÊN VUI TỪ ĐÓ. ĐỂ CHO ĐỎ THẮM MÀU CỜ TỰ DO. ĐỂ NHỮNG TIẾNG CƯỜI VANG KHẮP NƠI TỪ NGÀY CHIẾN THẮNG. CÙNG TÔI VIẾT TIẾP CÂU CHUYỆN HOÀ BÌNH NHÌN QUÊ HƯƠNG SÁNG TƯƠI TRONG BÌNH MINH. NHÌN ÁNH NẮNG CHIẾU RỰC RỠ QUỐC KỲ TUNG BAY PHẤP PHỚI!"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 12,
+  "fields": {
+    "name": "Năm Qua Đã Làm Được Gì",
+    "artist": 26,
+    "album": 1,
+    "duration": 238,
+    "song_url": "NamQuaDaLamGi.mp3",
+    "status": 1,
+    "premium": 1,
+    "play_count": 0,
+    "lyrics": null
+  }
+},
+{
+  "model": "app.song",
+  "pk": 13,
+  "fields": {
+    "name": "Mẹ Tôi",
+    "artist": 1,
+    "album": 1,
+    "duration": 407,
+    "song_url": "MeToi.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 0,
+    "lyrics": "Mẹ ơi con đã già rồi.Con ngồi nhớ mẹ, khóc như trẻ con.Mẹ ơi con đã già rồi.Con ngồi ngớ ngẩn, nhớ ngôi nhà xưa.Ngày xưa cha ngồi uống rượu, mẹ ngồi đan áo.Ngoài hiên, mùa đông cây bàng lá đổ.Ngày xưa chị hát vu vơ, những câu ca cổ cho em làm thơ.Ngày xưa mẹ đắp cho con tấm khăn quàng cổ, ấm ơi mẹ tôi.Ngày xưa bên giường cha nằm, mẹ buồn xa vắng.Nhìn cha, thương cha chí lớn không thành.Biển sóng thét gào, một ngày nhớ mẹ, sóng trào khơi xa.Trời gió mây ngàn, một ngày khóc mẹ, trăm ngàn sao rơi.Mẹ ơi thế giới mênh mông, mênh mông không bằng nhà mình.Tuổi thơ như chiếc gối êm, êm cho tuổi già úp mặt.Ngày xưa chị hát vu vơ, những câu ca cổ cho em làm thơ.Ngày xưa mẹ đắp cho con tấm khăn quàng cổ, ấm ơi mẹ tôi.Ngày xưa bên giường cha nằm, mẹ buồn xa vắng.Nhìn cha, thương cha chí lớn không thành.Trèo lên dãy núi thiên thai, ối a mẹ ngồi trông áng mây vàng.Mẹ ơi hãy dắt con theo, ối a để con mãi mãi bên mẹ.Mẹ ơi thế giới mênh mông, mênh mông không bằng nhà mình.Dù cho phú quý vinh quang, vinh quang không bằng có mẹ.Trèo lên dãy núi thiên thai, ối a mẹ tôi về đâu?Ngàn năm mây trắng bay theo, ối a mẹ ơi mẹ về đâu?"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 14,
+  "fields": {
+    "name": "Cha Già Rồi Đúng Không",
+    "artist": 28,
+    "album": 9,
+    "duration": 318,
+    "song_url": "ChaGiaRoiDungKhong.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 0,
+    "lyrics": "Cha thường kể nhiều lắm về thời niên thiếu.Cha hay đạp xe mỗi sáng cóc cách tới trường.Ngay khu phố trước nhà, có cụ già bán bánh thơm lừng.Những chiếc bánh bao tròn ấm áp khói bay.Khói bay tóc cha trắng, con dần khôn lớn.Da nhăn, đôi tay xạm nắng, thấy cha già hơn.Nhưng những lúc tan trường, chiếc xe đạp cha đón bên đường.Những năm tháng tươi đẹp của tuổi thanh xuân.Cha già rồi đúng không?.Mắt kém, tay chân thì run.Cha già rồi đúng không?.Sao cứ nói lung tung chuyện cũ.Cả cuộc đời của cha chỉ sống hi sinh cho mọi niềm vui của các con thôi.Thử hỏi cuộc đời, còn có bao nhiêu lần mười năm nữa.Có những lúc la mắng, con giận cha lắm.Cha không cho con những thứ như bao bạn thân.Bao nhiêu tối sinh nhật, chưa được quà dù chỉ một lần.Thế nhưng thứ cha tặng là cả thanh xuân.Cha già rồi đúng không?.Mỗi sớm trôi qua thật nhanh.Cha già rồi đúng không?.Con xin lỗi cha, con thật vô tâm.Cả cuộc đời của cha chỉ sống với những ước mơ ngày thơ tự vẽ nơi tim.Có lẽ cuộc đời, còn có bao nhiêu lần mười năm nữa.Cha kể con nghe.Cha già rồi đúng không?.Mắt kém, tay chân thì run.Cha già rồi đúng không?.Con xin lỗi cha, con quá vô tâm.Cả cuộc đời của cha chỉ sống hy sinh cho niềm vui của các con thôi.Thử hỏi cuộc đời, còn có bao nhiêu lần"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 15,
+  "fields": {
+    "name": "Điều Cha Chưa Nói",
+    "artist": 28,
+    "album": 9,
+    "duration": 258,
+    "song_url": "DieuChaChuaNoiBoGia.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 0,
+    "lyrics": "Khi con cất tiếng chào đời.Mẹ và cha là những người hạnh phúc nhất trần đời.Mọi buồn lo đều tan biến khi thấy con bên nôi.Cả thế giới thu lại bằng hình hài nhỏ bé.Chắc vẫn chưa sẵn sàng để làm Cha.Để có thể che chở con và Mẹ, đừng lo nhé.Vì Cha vẫn luôn cố gắng hơn từng ngày.Vì chính Cha cũng chẳng là người tuyệt vời nhất.Có bao nhiêu là yêu thương một lần chưa nói.Vì không biết cách nên đem giấu trong tim thôi.Trộm đứng sau lưng nhìn con lớn khôn theo dòng đời.Mọi khó khăn riêng mình Cha mang thôi.Đừng trách Cha bao lần yêu con nhưng lại không nói.Tình yêu đôi lúc đâu thể nói ra bằng lời.Rồi một mai, con sẽ thấy.Tình yêu của Cha cho con hôm nay.Một tình yêu tuyệt vời"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 16,
+  "fields": {
+    "name": "Em Không Sai Chúng Ta Sai",
+    "artist": 8,
+    "album": 4,
+    "duration": 176,
+    "song_url": "EmKhongSaiChungTaSai.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 0,
+    "lyrics": "Không thể tin vào giây phút ấy.Không ngờ đến ngày ta chia tay.Xin lỗi anh không giữ lời hứa.Không một ai được phép.Tổn thương lên người con gái ấy.Nhưng dù sao điều anh muốn biết.Khoảng cách nào mà ta tạo ra dấu chấm hết?.Phải nhận đau một lần mới thấu.Nếu đã là của nhau.Không giữ chặt tay sẽ vụt mất về sau.Anh thật sự ngu ngốc.Bảo vệ người ấy cũng không xong.Nỡ làm người yêu khóc.Thế thì còn xứng đáng yêu không?.Anh biết rằng anh sai.Nhưng không bao giờ tha thứ.Người nào tổn thương đến trái tim em.Như anh đã từng như thế.Anh thật lòng xin lỗi.Nhưng chẳng thể níu kéo nên thôi.Vẫn là vì anh sai.Vẫn là anh cố chấp ngày dài.Điều sau cuối anh làm.Nụ cười em đem hết đi.Cứ gói nỗi buồn lại để anh mang.Bao lần ta bỏ qua cho nhau.Nhưng nỗi lòng cả hai tạo ra nhiều vết xước.Hình như sau mọi lần cãi vã.Anh dần dần nhận ra ta không còn.Thân nhau yêu nhau như lúc ngày xưa.Anh thật sự ngu ngốc.Bảo vệ người ấy cũng không xong.Nỡ làm người yêu khóc.Thế thì còn xứng đáng yêu không?.Anh biết rằng anh sai.Nhưng không bao giờ tha thứ.Người nào tổn thương đến trái tim em.Như anh đã từng như thế.Anh thật lòng xin lỗi.Nhưng chẳng thể níu kéo nên thôi.Vẫn là vì anh sai.Vẫn là anh cố chấp ngày dài.Điều sau cuối anh làm.Nụ cười em đem hết đi.Cứ gói nỗi buồn lại để anh mang.Đành để em cứ đi như vậy.Nếu em không còn yêu anh nữa.Mỏi mệt vì tình yêu đến vậy.Chia tay để tìm người tốt hơn.Giật mình anh mới biết anh quá vô tâm.Đến ngay cả một người cũng đánh mất.Anh thật sự ngu ngốc.Bảo vệ người ấy cũng không xong.Nỡ làm người yêu khóc.Thế thì còn xứng đáng yêu không?.Anh biết rằng anh sai.Nhưng không bao giờ tha thứ.Người làm tổn thương đến trái tim em.Như anh đã từng như thế.Anh thật lòng xin lỗi.Nhưng chẳng thể níu kéo nên thôi.Vẫn là vì anh sai.Vẫn là anh cố chấp ngày dài.Điều sau cuối anh làm.Nụ cười em đem hết đi.Cứ gói nỗi buồn lại để anh mang.Điều sau cuối anh làm.Niềm vui em hãy đem theo.Cứ gói nỗi buồn lại để anh mang"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 17,
+  "fields": {
+    "name": "Yêu Đương Khó Quá Thì Chạy Về Khóc Với Anh",
+    "artist": 8,
+    "album": 4,
+    "duration": 223,
+    "song_url": "YeuDuongKhoQuaThiChayVeKhocVoiAnh.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 0,
+    "lyrics": "Mùi hương hoa Diên Vĩ hay là hương tóc mềm.Ngàn vì sao chẳng sáng hơn đôi mắt của em.Thật đẹp đến trăng thẹn thùng phải nấp sau mây.Vậy thì cớ sao a đây lại nỡ buông tay.Ừ thì anh không muốn phải nhìn thấy em buồn.Chuyện tình yêu nếu như không thể nắm thì buông.Tự nhiên không biết vì lẽ gì.Cứ lại tự kìm lòng suốt thôi.Cây không muốn lá rời cành.Khi lá vẫn còn xanh.Yêu đương khó quá thì chạy về khóc với anh.Một người luôn yêu em nhất.Chắc chắn sẽ không bỏ đi.Khiến em phải buồn được đâu.Phong ba sóng gió phủ đầu.Anh vẫn đứng đằng sau.Tình yêu có duyên thì tự tìm đến với nhau.Dù sao anh cũng vui lòng.Làm người anh trai đến suốt đời này được không?Cây không muốn lá rời cành.Khi lá vẫn còn xanh.Yêu đương khó quá thì chạy về khóc với anh.Một người luôn yêu em nhất.Chắc chắn sẽ không bỏ đi.Khiến em phải buồn được đâu.Phong ba sóng gió phủ đầu.Anh vẫn đứng đằng sau.Tình yêu có duyên thì tự tìm đến với nhau.Dù sao anh cũng vui lòng.Làm người anh trai đến suốt đời này được không?Dù sao a cũng đây rồi.Làm người theo em đến hết đời này mà thôi."
+  }
+},
+{
+  "model": "app.song",
+  "pk": 18,
+  "fields": {
+    "name": "Thương Em Là Điều Anh Không Thể Ngờ",
+    "artist": 26,
+    "album": 7,
+    "duration": 308,
+    "song_url": "ThuongEmLaDieuAnhKhongTheNgo.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 0,
+    "lyrics": "Yêu em,dù là đơn phương thế thôi.Sao chẳng thể nói ra trước đôi môi kia.Thương em,là điều anh không thể ngờ.Ngăn nỗi nhớ cũng không thể ngăn trái tim.Ngần ngại chôn sâu yêu thương.Anh giấu đi tâm sự mỗi khi bên cạnh nhau.Chỉ biết lặng thinh ngắm nhìn.Một ngôi sao nhỏ bé làm tim anh mãi mong chờ.Là anh cố chấp yêu em.Dù không thể nói thành lời.Vì dại khờ anh thu mình trong suy tư của em.Dù muộn sầu hay thương nhớ anh xin một mình mang hết.Chỉ mong bờ mi em không vương chút buồn.Và nụ cười em luôn trên bờ môi.Thương em,là điều anh không thể ngờ.Ngăn nỗi nhớ cũng không thể ngăn trái tim.Ngần ngại chôn sâu yêu thương.Anh giấu đi tâm sự mỗi khi bên cạnh nhau.Chỉ biết lặng thinh ngắm nhìn.Một ngôi sao nhỏ bé làm tim anh mãi mãi mong chờ.Là anh cố chấp yêu em.Dù không thể nói thành lời.Vì dại khờ anh thu mình trong suy tư của em.Dù muộn sầu hay thương nhớ anh xin một mình mang hết.Chỉ mong bờ mi em không vương chút buồn.Và nụ cười em luôn trên bờ môi.Trọn yêu thương này trao cho em.Trọn tâm tư này anh giữ lấy.Sẽ bên cạnh em dẫu cho ngày mai.Người rời xa anh.Rời xa anh mãi.Là anh cố chấp yêu em.Là anh cố chấp yêu em.Dù không thể nói thành lời.Vì dại khờ anh thu mình trong suy tư của em.Dù muộn sầu hay thương nhớ anh xin một mình mang hết.Chỉ mong bờ mi em không vương chút buồn.Và nụ cười em luôn trên bờ môi.Chỉ mong bờ mi em không vương chút buồn.Và nụ cười em luôn trên bờ môi..."
+  }
+},
+{
+  "model": "app.song",
+  "pk": 19,
+  "fields": {
+    "name": "Yêu Một Người Sao Buồn Đến Thế",
+    "artist": 26,
+    "album": 7,
+    "duration": 299,
+    "song_url": "YeuMotNguoiSaoBuonDenThe.mp3",
+    "status": 1,
+    "premium": 0,
+    "play_count": 0,
+    "lyrics": "Đã đến lúc cần được giải thoát.Cố níu kéo cũng chỉ vỡ tan.Như hoa kia chẳng còn thơm ngát.Cố giữ lấy cũng lụi tàn.Nước mắt rơi giữa đời ngổn ngang.Ưu tư mang cả trời ký ức.Càng day dứt,càng không cách nào nguôi.Bơ vơ theo dòng người vô hướng.Cứ vấn vương rồi lại tổn thương.Nhớ không được,mà quên cũng chẳng được.Yêu một người sao buồn đến thế?Thương một người sao đau đến thế?Nhớ không được,mà quên cũng không được.[ĐK:]Có nhau là điều may mắn,cớ sao không giữ lấy.Nếu buông tay chẳng thể quay lại.Dẫu ai đã từng gây bao nhớ thương,ngàn lần vương vấn.Nắng mưa trên đầu làm sao có ai biết thấu.Yêu một người sẽ buồn bao lâu?Trách ai bây giờ,chỉ biết trách ta vội vàng.Vì yêu là đau là thương thế đấy.Vì yêu là say,là bao đắng cay.Vì ai đổi thay?Vì ai?Vì ai?"
+  }
+},
+{
+  "model": "app.song",
+  "pk": 20,
+  "fields": {
+    "name": "Những Kẻ Mộng Mơ",
+    "artist": 26,
+    "album": 7,
+    "duration": 253,
+    "song_url": "NhungKeMongMo.mp3",
+    "status": 1,
+    "premium": 1,
+    "play_count": 0,
+    "lyrics": "Biển, vẫn cứ thế trông về nơi xa. Kìa hoàng hôn rực rỡ và lấp lánh những nơi biển qua. Bờ cát vẫn nằm đợi sóng xô về, nhưng biển kia chẳng thể. Lại nhìn phía chân trời, cuộn làn sóng kia vội. Tìm hoàng hôn xa để kết đôi. Đừng mộng mơ nữa, hỡi biển ơi. Chân trời xa lắm, chẳng có ai đợi. Phía bên kia đại dương cũng chỉ có bờ cát nâng niu biển thôi. Đừng mộng mơ nữa, hỡi kẻ mộng mơ. Mặt trời tận nơi góc vũ trụ bao la. Hoàng hôn đó chỉ là từng tia sáng mong manh từ nơi xa. Và chỉ có anh bên em kế bên em khi gục ngã. Thủy triều vẫn thế đầy rồi lại vơi. Và lại mang biển sóng ngày đến tối đi lạnh lùng vậy thôi. Bờ cát giữ biển lại mỗi khi về, nhưng biển kia chẳng thể. Lại nhìn phía chân trời, cuộn làn sóng kia vội. Tìm hoàng hôn xa để kết đôi. Đừng mộng mơ nữa, hỡi biển ơi. Chân trời xa lắm, chẳng có ai đợi. Phía bên kia đại dương cũng chỉ có bờ cát nâng niu biển thôi. Đừng mộng mơ nữa, hỡi kẻ mộng mơ. Mặt trời tận nơi góc vũ trụ bao la. Hoàng hôn đó chỉ là từng tia sáng mong manh từ nơi xa. Và chỉ có anh bên em kế bên em khi gục ngã. Ôm em thế nhưng em yêu lại đi. Đừng lặng im như thế, biết sẽ đớn đau sao em lại đi? Phía bên kia đại dương cũng chỉ có bờ cát lặng im. Hoàng hôn ánh sáng xa tận ngút ngàn. Từ góc vũ trụ lặng yên. Đừng mộng mơ nữa, hỡi biển ơi. Chân trời xa lắm, chẳng có ai đợi. Phía bên kia đại dương cũng chỉ có bờ cát nâng niu biển thôi. Đừng mộng mơ nữa, hỡi kẻ mộng mơ. Mặt trời tận nơi góc vũ trụ bao la. Hoàng hôn đó chỉ là từng tia sáng mong manh từ nơi xa. Và chỉ có anh bên em kế bên em khi gục ngã."
+  }
+},
+{
+  "model": "app.song",
+  "pk": 23,
+  "fields": {
+    "name": "Xuân Thì",
+    "artist": 29,
+    "album": 6,
+    "duration": 454,
+    "song_url": "xuanthi.mp4",
+    "status": 1,
+    "premium": 0,
+    "play_count": 0,
+    "lyrics": "Gặp em trong những người bạn thân quen một ngày mùa đông\r\nNhiều năm xa cách kể từ lúc ấy chẳng còn đợi mong\r\nVà thời gian đã nhuốm màu chính ta nên giờ mình khác xưa\r\nĐôi nếp nhăn đồi mồi\r\n\r\nGiờ thôi xao xuyến nhưng còn bâng khuâng như chuyện vừa đây\r\nChuyện thời thương mến chỉ bằng đan tay hôn vội vài giây\r\nVà rồi ta cũng có niềm chia phôi mất ngàn ngày để vơi\r\nNhưng đã qua cả rồi\r\nKhi vui hãy nhớ\r\n\r\nTình buồn không phải lúc nào cũng chỉ để quên đi\r\nTình buồn lưu giữ bao nhiêu mộng mơ lúc xuân thì\r\nTại mưa tại nắng hay muôn niềm thương\r\nĐã vấn vương rồi như sương một hôm mãi xa\r\n\r\nĐể rồi nghĩ đến ta đau nhẹ tênh giữa trái tim\r\nNụ cười nước mắt sau những bão giông đã ngủ yên\r\nVà nhìn lại xem ta đang hạnh phúc với chính ta ngày hôm nay\r\nCó khi bước không chung đường vậy lại hay\r\n\r\nCảnh xưa nơi cũ những miền ta qua cũng nhiều đổi thay\r\nMộng mơ hoa tuyết khắp trời trắng xóa đôi tà áo bay\r\nGiờ còn bóng dáng hai người an nhiên\r\nSau không ít những chênh vênh\r\nMỉm cười với nhau lần đầu kể từ nỗi đau\r\n\r\nTình buồn không phải lúc nào cũng chỉ để quên đi\r\nTình buồn lưu giữ bao nhiêu mộng mơ lúc xuân thì\r\nTại mưa tại nắng hay muôn niềm thương\r\nĐã vấn vương rồi như sương một hôm mãi xa\r\n\r\nĐể rồi nghĩ đến ta đau nhẹ tênh giữa trái tim\r\nNụ cười nước mắt sau những bão giông đã ngủ yên\r\nVà nhìn lại xem ta đang hạnh phúc với chính ta ngày hôm nay\r\nCó khi bước không chung đường vậy lại hay\r\n\r\nTình buồn không phải lúc nào cũng chỉ để quên đi\r\nTình buồn lưu giữ bao nhiêu mộng mơ lúc xuân thì\r\nTại mưa tại nắng hay muôn niềm thương\r\nĐã vấn vương rồi như sương một hôm mãi xa\r\n\r\nĐể rồi nghĩ đến ta đau nhẹ tênh giữa trái tim\r\nNụ cười nước mắt sau những bão giông đã ngủ yên\r\nVà nhìn lại xem ta đang hạnh phúc với chính ta ngày hôm nay\r\nCó khi bước không chung đường\r\nCó khi mất nhau\r\nCó khi bước không chung đường\r\nVậy lại hay..."
+  }
+},
+{
+  "model": "app.song",
+  "pk": 24,
+  "fields": {
+    "name": "kjsfkq",
+    "artist": 2,
+    "album": 1,
+    "duration": 237,
+    "song_url": "giothi_1745989312.mp4",
+    "status": 1,
+    "premium": 0,
+    "play_count": 0,
+    "lyrics": "jhfw"
+  }
+},
+{
+  "model": "app.playlist",
+  "pk": 1,
+  "fields": {
+    "name": "Nhạc Trẻ Remix",
+    "user": 1,
+    "created_at": "2025-04-19T17:03:32.187Z",
+    "cover_image": null,
+    "description": null,
+    "status": 1
+  }
+},
+{
+  "model": "app.playlist",
+  "pk": 2,
+  "fields": {
+    "name": "Sơn Tùng Sky",
+    "user": 1,
+    "created_at": "2025-04-27T06:18:37.396Z",
+    "cover_image": null,
+    "description": null,
+    "status": 1
+  }
+},
+{
+  "model": "app.playlistsong",
+  "pk": 3,
+  "fields": {
+    "playlist": 1,
+    "song": 5
+  }
+},
+{
+  "model": "app.playlistsong",
+  "pk": 4,
+  "fields": {
+    "playlist": 1,
+    "song": 1
+  }
+},
+{
+  "model": "app.playlistsong",
+  "pk": 5,
+  "fields": {
+    "playlist": 1,
+    "song": 12
+  }
+},
+{
+  "model": "app.playlistsong",
+  "pk": 6,
+  "fields": {
+    "playlist": 2,
+    "song": 5
+  }
+},
+{
+  "model": "app.playlistsong",
+  "pk": 7,
+  "fields": {
+    "playlist": 2,
+    "song": 10
+  }
+}
+]

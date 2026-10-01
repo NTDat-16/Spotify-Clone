@@ -87,7 +87,7 @@ const ViewAlbum: React.FC = () => {
                     album: transformedData.name,
                     duration: song.duration || 1,
                     song_url: song.song_url,
-                    image_url: song.album_img ? `/Uploads/albums/${song.album_img}` : (transformedData.cover_image ? `/Uploads/albums/${transformedData.cover_image}` : '/default-cover.png'),
+                    image_url: song.album_img ? `/uploads/albums/${song.album_img}` : (transformedData.cover_image ? `/uploads/albums/${transformedData.cover_image}` : '/default-cover.png'),
                     premium: song.premium
                 }));
                 setSongList(mappedSongs);
@@ -124,7 +124,7 @@ const ViewAlbum: React.FC = () => {
                     album: albumData.name,
                     duration: firstNonPremiumSong.duration,
                     song_url: firstNonPremiumSong.song_url,
-                    image_url: firstNonPremiumSong.album_img ? `/Uploads/albums/${firstNonPremiumSong.album_img}` : (albumData.cover_image ? `/Uploads/albums/${albumData.cover_image}` : '/default-cover.png'),
+                    image_url: firstNonPremiumSong.album_img ? `/uploads/albums/${firstNonPremiumSong.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png'),
                     premium: firstNonPremiumSong.premium
                 });
             } else {
@@ -162,7 +162,7 @@ const ViewAlbum: React.FC = () => {
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-8 flex items-center space-x-8 shadow-lg">
                 <div className="w-64 h-64 bg-[#282828] rounded-lg overflow-hidden shadow-xl transform transition-all hover:scale-105">
                     <img
-                        src={albumData.cover_image ? `/Uploads/albums/${albumData.cover_image}` : '/default-cover.png'} 
+                        src={albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png'} 
                         alt={albumData.name}
                         className="w-full h-full object-cover"
                     />
@@ -210,14 +210,14 @@ const ViewAlbum: React.FC = () => {
                                 album: albumData.name,
                                 duration: song.duration,
                                 song_url: song.song_url,
-                                image_url: song.album_img ? `/Uploads/albums/${song.album_img}` : (albumData.cover_image ? `/Uploads/albums/${albumData.cover_image}` : '/default-cover.png'),
+                                image_url: song.album_img ? `/uploads/albums/${song.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png'),
                                 premium: song.premium
                             })}
                         >
                             <div className="col-span-1 text-gray-400">{index + 1}</div>
                             <div className="col-span-5 flex items-center gap-3">
                                 <img
-                                    src={song.album_img ? `/Uploads/albums/${song.album_img}` : (albumData.cover_image ? `/Uploads/albums/${albumData.cover_image}` : '/default-cover.png')}
+                                    src={song.album_img ? `/uploads/albums/${song.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png')}
                                     alt={song.name}
                                     className="w-12 h-12 rounded-md object-cover"
                                 />

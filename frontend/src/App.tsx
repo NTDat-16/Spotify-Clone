@@ -397,11 +397,15 @@ export function App() {
                   <Route path="/playlist/:id" element={<Playlist />} />
                   <Route path="/all_songs" element={<AllSongs />} />
                   <Route path="/viewalbum/:id" element={<ViewAlbum />} />
+                  <Route path="/loved" element={<LovedSongs />} />
                   <Route
-                    path="/loved"
-                    element={<LovedSongs setCurrentSong={undefined} />}
+                    path="/chat"
+                    element={
+                      <RequireAuth>
+                        <Chat />
+                      </RequireAuth>
+                    }
                   />
-                  <Route path="/chat" element={<Chat />} />
                   <Route
                     path="/search"
                     element={

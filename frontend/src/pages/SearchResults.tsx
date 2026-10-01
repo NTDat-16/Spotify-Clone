@@ -39,6 +39,10 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
         const data = response.data.map((song: any) => ({
           ...song,
           artist: song.artist_name,
+          image_url: song.album_img
+            ? `/uploads/albums/${song.album_img}`
+            : "/default-cover.png",
+          premium: song.premium ?? 0,
         }));
         setSongs(data);
       } catch (err) {
@@ -109,8 +113,8 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-<img
-                        src={`${API_ORIGIN}${song.image_url}`}
+                      <img
+                        src={song.image_url || "/default-cover.png"}
                         alt={song.name}
                         className="h-10 w-10 rounded object-cover mr-3"
                       />

@@ -1,0 +1,25 @@
+# Virtual environments (must never be uploaded to Vercel)
+venv/
+.venv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+
+# Local environment & secrets
+.env
+.env.local
+
+# Database dumps and documentation
+data.sql
+info.txt
+package-lock.json
+db.sqlite3
+
+# Audio files (155MB exceeds Vercel Serverless Function 15MB/50MB limit)
+# For production, host media files on Supabase Storage, S3, or Cloudinary.
+# To deploy with static audio, use Cloud Object Storage or separate CDN.

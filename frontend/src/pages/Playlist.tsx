@@ -48,8 +48,8 @@ const Playlist: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Placeholder for user premium status (replace with actual logic)
-  const isPremiumUser = false; // Replace with auth context or API call
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isPremiumUser = user?.isPremium === true;
 
   const formatDuration = (seconds: number): string => {
     const minutes = Math.floor(seconds / 60);

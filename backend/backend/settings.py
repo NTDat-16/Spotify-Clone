@@ -7,6 +7,15 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+env_file = BASE_DIR / ".env"
+if env_file.exists():
+    with open(env_file, encoding="utf-8") as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _k, _v = _line.split("=", 1)
+                os.environ.setdefault(_k.strip(), _v.strip().strip("'\""))
+
 
 def env_list(name, default=""):
     return [value.strip().rstrip("/") for value in os.getenv(name, default).split(",") if value.strip()]
@@ -16,7 +25,7 @@ DEBUG = os.getenv("DEBUG", "False").lower() in {"1", "true", "yes"}
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-development-key-change-me")
 
 # VERCEL_URL has no protocol. Add the stable custom domain through ALLOWED_HOSTS.
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1")
+ALLOWED_HOSTS = env_list("ALLOWED_HOSTS", "localhost,127.0.0.1,.vercel.app")
 if os.getenv("VERCEL_URL"):
     ALLOWED_HOSTS.append(os.environ["VERCEL_URL"])
 
@@ -110,11 +119,16 @@ CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:5173,https://spotify-clone-14.vercel.app",
 )
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
+]
 CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = env_list(
     "CSRF_TRUSTED_ORIGINS",
     os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173,https://spotify-clone-14.vercel.app"),
 )
+if os.getenv("VERCEL_URL"):
+    CSRF_TRUSTED_ORIGINS.append(f"https://{os.environ['VERCEL_URL']}")
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.getenv("VERCEL") == "1"

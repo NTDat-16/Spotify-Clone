@@ -1,8 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { API_ORIGIN } from "../config/api";
 import axios from "axios";
-import { PlayIcon, Clock3Icon, CircleEllipsis } from "lucide-react";
+import { PlayIcon, Clock3Icon, CircleEllipsis, Heart } from "lucide-react";
 import { useAudio } from "../AudioContext";
+import { getLovedSongs, toggleLovedSong } from "../services/favorites";
 
 type Song = {
   id: number;
@@ -18,10 +19,19 @@ type Song = {
 const AllSongs: React.FC = () => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lovedIds, setLovedIds] = useState<Set<number>>(() => new Set(getLovedSongs().map((s) => s.id)));
   const { handlePlaySong, setSongList } = useAudio();
   
-  // Placeholder for user premium status (replace with actual logic)
-  const isPremiumUser = false; // Example: Replace with auth context or API call to check user status
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isPremiumUser = user?.isPremium === true;
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setLovedIds(new Set(getLovedSongs().map((s) => s.id)));
+    };
+    window.addEventListener("loved-songs-updated", handleUpdate);
+    return () => window.removeEventListener("loved-songs-updated", handleUpdate);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -122,10 +132,9 @@ const AllSongs: React.FC = () => {
                 <Clock3Icon size={14} />
               </th>
               <th
-                style={{ width: "8%" }}
-                className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center"
+                className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center w-24"
               >
-                Tải về
+                Hành động
               </th>
             </tr>
           </thead>
@@ -166,13 +175,29 @@ const AllSongs: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {formatDuration(song.duration)}
                   </td>
-                  <td>
-                    <button
-                      onClick={(e) => handleDownload(e, song)}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex justify-center items-center"
-                    >
-                      <CircleEllipsis />
-                    </button>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div className="flex items-center justify-center gap-3">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleLovedSong(song);
+                        }}
+                        title={lovedIds.has(song.id) ? "Xóa khỏi yêu thích" : "Yêu thích"}
+                        className="text-gray-400 hover:text-white transition p-1"
+                      >
+                        <Heart
+                          size={18}
+                          className={lovedIds.has(song.id) ? "fill-[#1DB954] text-[#1DB954]" : "text-gray-400 hover:text-white"}
+                        />
+                      </button>
+                      <button
+                        onClick={(e) => handleDownload(e, song)}
+                        title="Tải về"
+                        className="text-gray-400 hover:text-white transition p-1"
+                      >
+                        <CircleEllipsis size={18} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

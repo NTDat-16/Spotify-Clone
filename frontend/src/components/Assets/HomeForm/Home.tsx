@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { API_ORIGIN } from "../../../config/api";
-import { PlayIcon, CircleEllipsis } from "lucide-react";
+import { PlayIcon, CircleEllipsis, Heart } from "lucide-react";
 import { useAudio } from "../../../AudioContext";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { getLovedSongs, toggleLovedSong } from "../../../services/favorites";
 
 interface Song {
   id: number;
@@ -27,10 +28,19 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [albums, setAlbums] = useState<Album[]>([]);
+  const [lovedIds, setLovedIds] = useState<Set<number>>(() => new Set(getLovedSongs().map((s) => s.id)));
 
   // Lấy trạng thái premium từ localStorage
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const isPremiumUser = user?.isPremium === true;
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setLovedIds(new Set(getLovedSongs().map((s) => s.id)));
+    };
+    window.addEventListener("loved-songs-updated", handleUpdate);
+    return () => window.removeEventListener("loved-songs-updated", handleUpdate);
+  }, []);
 
   // Format duration
   const formatDuration = (seconds: number): string => {
@@ -200,9 +210,23 @@ const Home: React.FC = () => {
                   <div className="w-24 text-sm text-gray-400 text-center">
                     {formatDuration(song.duration)}
                   </div>
-                  <div className="w-24 text-center">
+                  <div className="w-24 text-center flex items-center justify-center gap-3">
                     <button
-                      className="text-gray-400 hover:text-gray-200 transition-colors"
+                      className="text-gray-400 hover:text-white transition p-1"
+                      title={lovedIds.has(song.id) ? "Xóa khỏi yêu thích" : "Yêu thích"}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleLovedSong(song);
+                      }}
+                    >
+                      <Heart
+                        size={18}
+                        className={lovedIds.has(song.id) ? "fill-[#1DB954] text-[#1DB954]" : "text-gray-400 hover:text-white"}
+                      />
+                    </button>
+                    <button
+                      className="text-gray-400 hover:text-gray-200 transition-colors p-1"
+                      title="Tải về"
                       onClick={(e) => handleDownload(e, song)}
                     >
                       <CircleEllipsis size={20} />
