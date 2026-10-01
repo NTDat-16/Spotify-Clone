@@ -76,6 +76,7 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = () => {
         height: "100%",
         width: "100%",
         videoId: activeVideoId || "",
+        host: "https://www.youtube.com",
         playerVars: {
           autoplay: 1,
           controls: 1,
@@ -84,17 +85,23 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = () => {
           fs: 1,
           playsinline: 1,
           enablejsapi: 1,
-          origin: window.location.origin,
         },
         events: {
           onReady: (event: any) => {
             playerRef.current = event.target;
             registerYtPlayer(event.target);
-            event.target.setVolume(Math.round(volume * 100));
+            try {
+              event.target.unMute();
+              event.target.setVolume(Math.round(volume * 100));
+            } catch {}
             if (activeVideoId && playbackSource === "youtube") {
-              event.target.loadVideoById(activeVideoId);
-              if (isPlaying) {
-                event.target.playVideo();
+              try {
+                event.target.loadVideoById(activeVideoId);
+                if (isPlaying) {
+                  event.target.playVideo();
+                }
+              } catch (e) {
+                console.warn("Lỗi load video lúc onReady:", e);
               }
             }
           },
@@ -114,7 +121,10 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = () => {
             }
           },
           onError: (err: any) => {
-            console.error("YouTube Player Error:", err);
+            console.error("YouTube Player Error code:", err?.data);
+            if (err?.data === 150 || err?.data === 101) {
+              console.warn("Video này bị giới hạn nhúng bởi tác quyền, đang chuyển bài hoặc mở xem trực tiếp.");
+            }
           },
         },
       });
@@ -210,13 +220,14 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = () => {
               }
             : {
                 position: "fixed",
-                bottom: "-9999px",
-                right: "-9999px",
-                width: "280px",
-                height: "160px",
+                bottom: "0px",
+                left: "0px",
+                width: "160px",
+                height: "90px",
                 opacity: 0.001,
                 pointerEvents: "none",
-                zIndex: -1,
+                zIndex: -10,
+                overflow: "hidden",
               }
         }
         className={

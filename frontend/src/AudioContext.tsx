@@ -152,9 +152,9 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
     audio.addEventListener("durationchange", updateDuration);
     audio.addEventListener("ended", handleEnded);
     audio.addEventListener("error", (e) => {
-      if (playbackSource === "audio") {
-        console.error("Audio error:", e);
-        setIsPlaying(false);
+      if (playbackSource === "audio" && currentSong) {
+        console.warn("Audio HTML5 error, tự động chuyển sang luồng YouTube:", e);
+        handlePlaySong({ ...currentSong, song_url: "" });
       }
     });
 
@@ -319,8 +319,8 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
         setIsPlaying(true);
       }
     } catch (error) {
-      console.error("Error playing audio:", error);
-      setIsPlaying(false);
+      console.warn("Lỗi phát audio local, tự động chuyển sang YouTube:", error);
+      handlePlaySong({ ...song, song_url: "" });
     }
   };
 

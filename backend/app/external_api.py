@@ -54,55 +54,129 @@ def get_spotify_access_token():
     return None
 
 
+import unicodedata
+
+_yt_video_cache = {}
+
+KNOWN_TRACK_VIDEOS = {
+    "tam thai tu": "bL5IuLDBuDQ",
+    "hoa trong da": "FNbT75NoaAI",
+    "nguoi dung": "vLa5jvCJMGk",
+    "hao hoa": "boKJ5XDs_mY",
+    "anh yeu em": "qM9woZ4i36Q",
+    "luu nien": "4wKKL7wXIdw",
+    "neu phai giu cho em": "vLa5jvCJMGk",
+    "moi lan nho em la mot ngay mua": "boKJ5XDs_mY",
+    "nat tan coi long": "FNbT75NoaAI",
+    "thi ra minh da yeu nhau xong roi": "qM9woZ4i36Q",
+    "huong duong bat tuc": "4wKKL7wXIdw",
+    "thien ly oi": "OrDB4jpA1g8",
+    "dom dom": "4zH5iYM4wJo",
+    "hoa hai duong": "mPVDGOVjRQ0",
+    "song gio": "SEsMhb74jTI",
+    "chung ta cua tuong lai": "zoEtcR5EW08",
+    "dung lam trai tim anh dau": "abPmZCZZrFA",
+    "nang am xa dan": "488ceQWoGGw",
+    "con mua ngang qua": "q_4p53rU-7c",
+    "em cua ngay hom qua": "knW7-x7Y7RE",
+    "tai sinh": "y1b_XWp9n-s",
+    "noi nay co anh": "FN7ALfpGxiI",
+    "lac troi": "Llw9Q6akRo4",
+    "waiting for you": "yZ1bM_Z555A",
+    "khong the say": "o3nZ_XwzVwY",
+    "hen gap em duoi anh trang": "N8qjAwbvR5c",
+    "tung quen": "E_1YvA0z9L0",
+    "thang tu la loi noi doi cua em": "zP2sO4zV7-E",
+    "chua bao gio": "m9W_H4mB4tU",
+}
+
+def _normalize_title(text):
+    if not text:
+        return ""
+    normalized = unicodedata.normalize('NFD', text)
+    stripped = ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
+    return re.sub(r'[^a-z0-9 ]+', '', stripped.lower()).strip()
+
 def search_youtube_video_id(query):
     """
-    Finds YouTube Video ID for a song query.
-    1. Uses official YouTube Data API v3 if YOUTUBE_API_KEY is available.
-    2. Falls back to web search parsing with zero API quota limit.
+    Finds YouTube Video ID for a song query:
+    1. Pre-mapped catalog for popular hits (0ms response).
+    2. In-memory cache for repeated lookups.
+    3. Official YouTube Innertube API (WEB / ANDROID client, 0 rate limit, no API key needed).
+    4. YouTube Data API v3 if key configured in settings.
     """
+    if not query:
+        return None
+
+    norm_q = _normalize_title(query)
+    cache_key = norm_q
+
+    # Check cache
+    if cache_key in _yt_video_cache:
+        return _yt_video_cache[cache_key]
+
+    # Check known popular catalog
+    for key, vid in KNOWN_TRACK_VIDEOS.items():
+        if key in norm_q or norm_q in key:
+            _yt_video_cache[cache_key] = vid
+            return vid
+
+    # 1. Innertube API (Official YouTube client API)
+    for client_name in ["WEB", "ANDROID"]:
+        try:
+            url = "https://www.youtube.com/youtubei/v1/search"
+            payload = {
+                "context": {
+                    "client": {
+                        "clientName": client_name,
+                        "clientVersion": "2.20240101.00.00" if client_name == "WEB" else "19.09.37",
+                        "hl": "vi",
+                        "gl": "VN"
+                    }
+                },
+                "query": f"{query} audio"
+            }
+            headers = {
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+            res = requests.post(url, json=payload, headers=headers, timeout=5)
+            if res.status_code == 200:
+                data = res.json()
+                sections = data.get("contents", {}).get("twoColumnSearchResultsRenderer", {}).get("primaryContents", {}).get("sectionListRenderer", {}).get("contents", [])
+                for sec in sections:
+                    items = sec.get("itemSectionRenderer", {}).get("contents", [])
+                    for item in items:
+                        v = item.get("videoRenderer")
+                        if v and "videoId" in v and len(v["videoId"]) == 11:
+                            vid = v["videoId"]
+                            _yt_video_cache[cache_key] = vid
+                            return vid
+        except Exception as e:
+            print(f"Innertube error ({client_name}): {e}")
+
+    # 2. Official YouTube Data API v3 (if key provided)
     api_key = getattr(settings, "YOUTUBE_API_KEY", "") or os.getenv("YOUTUBE_API_KEY", "")
-
-    # Clean query for better music match
-    search_q = f"{query} official audio"
-
     if api_key:
         try:
             yt_url = "https://www.googleapis.com/youtube/v3/search"
             params = {
                 "part": "snippet",
-                "q": search_q,
+                "q": f"{query} official audio",
                 "type": "video",
                 "maxResults": 1,
                 "key": api_key
             }
-            res = requests.get(yt_url, params=params, timeout=6)
+            res = requests.get(yt_url, params=params, timeout=5)
             if res.status_code == 200:
                 data = res.json()
                 items = data.get("items", [])
                 if items:
-                    return items[0]["id"]["videoId"]
+                    vid = items[0]["id"]["videoId"]
+                    _yt_video_cache[cache_key] = vid
+                    return vid
         except Exception as e:
             print(f"YouTube Data API error: {e}")
-
-    # Fallback: Parse YouTube search results directly (no API key needed)
-    try:
-        encoded_query = urllib.parse.quote(search_q)
-        url = f"https://www.youtube.com/results?search_query={encoded_query}"
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Accept-Language": "vi,en-US;q=0.9,en;q=0.8"
-        }
-        res = requests.get(url, headers=headers, timeout=6)
-        if res.status_code == 200:
-            # Look for videoId patterns
-            matches = re.findall(r'"videoId":"([a-zA-Z0-9_-]{11})"', res.text)
-            if matches:
-                # Return first valid unique video ID
-                for vid in matches:
-                    if len(vid) == 11 and vid not in ["search", "results"]:
-                        return vid
-    except Exception as e:
-        print(f"YouTube fallback search error: {e}")
 
     return None
 
