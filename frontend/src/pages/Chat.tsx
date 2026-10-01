@@ -16,6 +16,7 @@ import {
 import { useAudio, Song } from "../AudioContext";
 import { askGeminiMusicAI, extractSongsFromText } from "../services/gemini";
 import { toggleLovedSong, isSongLoved } from "../services/favorites";
+import { getImageUrl } from "../utils/media";
 
 interface Users {
   id: number;
@@ -88,7 +89,25 @@ const Chat: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { handlePlaySong, setSongList } = useAudio();
+  const { handlePlaySong, setSongList, currentSong, isPlaying } = useAudio();
+  const [dbSongs, setDbSongs] = useState<any[]>([]);
+  const [autoPlayToast, setAutoPlayToast] = useState<{
+    name: string;
+    artist: string;
+    isMv: boolean;
+  } | null>(null);
+
+  // Tải danh sách bài hát từ hệ thống để đồng bộ ảnh bìa và metadata
+  useEffect(() => {
+    fetch(`${API_ORIGIN}/api/songs/`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setDbSongs(data);
+        }
+      })
+      .catch((err) => console.warn("Lỗi tải db songs:", err));
+  }, []);
 
   const syncLovedState = () => {
     try {
@@ -244,6 +263,16 @@ const Chat: React.FC = () => {
       };
 
       setAiMessages((prev) => [...prev, aiReplyMsg]);
+
+      // QUYỀN TỰ ĐỘNG PHÁT: Khi người dùng yêu cầu mở/bật/phát/nghe/play bài hát -> Tự động phát ngay lập tức
+      const playKeywords = /(mở|bật|phát|nghe|play|chơi|xem\s*mv|mở\s*mv|bật\s*mv|phát\s*mv|bật\s*nhạc|mở\s*nhạc|phát\s*nhạc|cho\s*nghe)/i;
+      const isPlayIntent = playKeywords.test(userText);
+      const isMvIntent = /(mv|video|xem\s*mv|mở\s*mv|bật\s*mv|phát\s*mv)/i.test(userText);
+
+      if (isPlayIntent && extractedSongs.length > 0) {
+        const topSong = extractedSongs[0];
+        handlePlayRecommendedSong(topSong.name, topSong.artist, isMvIntent);
+      }
     } catch (err: any) {
       console.error("AI Error:", err);
       setError("Không thể kết nối tới Spotify AI DJ. Vui lòng thử lại!");
@@ -290,21 +319,56 @@ const Chat: React.FC = () => {
     }
   };
 
-  const handlePlayRecommendedSong = (songName: string, artistName: string, forceMv: boolean = false) => {
-    const songObj: Song = {
-      id: `ai_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
-      name: songName,
-      artist: artistName,
-      album: "Gợi ý từ Spotify AI DJ",
-      duration: 210,
-      song_url: "", // Sẽ tự động phân giải qua YouTube IFrame API
-      image_url: "/default-cover.png",
-      premium: 0,
-      source: "spotify",
-    };
+  const handlePlayRecommendedSong = (
+    songName: string,
+    artistName: string,
+    forceMv: boolean = false
+  ) => {
+    // 1. Đối soát trong database để lấy bìa album và dữ liệu chính thức
+    const normSearchName = songName.toLowerCase().trim();
+    const matched = dbSongs.find((s) => {
+      const sName = (s.name || "").toLowerCase().trim();
+      return (
+        sName === normSearchName ||
+        sName.includes(normSearchName) ||
+        normSearchName.includes(sName)
+      );
+    });
+
+    const songObj: Song = matched
+      ? {
+          id: matched.id,
+          name: matched.name,
+          artist: matched.artist_name || matched.artist?.name || artistName,
+          album: matched.album_name || matched.album?.name || "Album",
+          duration: matched.duration || 210,
+          song_url: matched.song_url || "",
+          image_url: matched.album_img
+            ? getImageUrl(matched.album_img)
+            : "/default-cover.png",
+          premium: matched.premium || 0,
+          source: matched.song_url ? "local" : "spotify",
+        }
+      : {
+          id: `ai_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+          name: songName,
+          artist: artistName,
+          album: "Gợi ý từ Spotify AI DJ",
+          duration: 210,
+          song_url: "", // Phân giải tự động qua YouTube IFrame API
+          image_url: "/default-cover.png",
+          premium: 0,
+          source: "spotify",
+        };
 
     setSongList([songObj]);
     handlePlaySong(songObj, forceMv);
+    setAutoPlayToast({
+      name: songObj.name,
+      artist: songObj.artist,
+      isMv: forceMv,
+    });
+    setTimeout(() => setAutoPlayToast(null), 6000);
   };
 
   const handleClearAiChat = () => {
@@ -525,17 +589,38 @@ const Chat: React.FC = () => {
                             {msg.songs.map((song, sIdx) => {
                               const lovedKey = `${song.name.toLowerCase()}_${song.artist.toLowerCase()}`;
                               const isLoved = lovedSet.has(lovedKey);
+                              const isCurrentlyPlaying =
+                                isPlaying &&
+                                currentSong?.name?.toLowerCase().trim() ===
+                                  song.name.toLowerCase().trim();
 
                               return (
                                 <div
                                   key={sIdx}
-                                  className="bg-[#262626] hover:bg-[#303030] p-2.5 rounded-lg border border-[#383838] transition flex items-center justify-between gap-2 group"
+                                  className={`p-2.5 rounded-lg border transition flex items-center justify-between gap-2 group ${
+                                    isCurrentlyPlaying
+                                      ? "bg-[#132a1c] border-[#1DB954] shadow-md shadow-green-950/50"
+                                      : "bg-[#262626] hover:bg-[#303030] border-[#383838]"
+                                  }`}
                                 >
                                   <div className="min-w-0 flex-1">
-                                    <h4 className="text-xs font-bold text-white truncate" title={song.name}>
+                                    <h4
+                                      className={`text-xs font-bold truncate flex items-center gap-1.5 ${
+                                        isCurrentlyPlaying
+                                          ? "text-[#1DB954]"
+                                          : "text-white"
+                                      }`}
+                                      title={song.name}
+                                    >
+                                      {isCurrentlyPlaying && (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[#1DB954] animate-ping flex-shrink-0" />
+                                      )}
                                       {song.name}
                                     </h4>
-                                    <p className="text-[11px] text-gray-400 truncate mt-0.5" title={song.artist}>
+                                    <p
+                                      className="text-[11px] text-gray-400 truncate mt-0.5"
+                                      title={song.artist}
+                                    >
                                       {song.artist}
                                     </p>
                                   </div>
@@ -625,6 +710,30 @@ const Chat: React.FC = () => {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Thanh thông báo tự động phát nhạc bởi AI DJ */}
+            {autoPlayToast && selectedUser.isAi && (
+              <div className="bg-gradient-to-r from-emerald-950/90 via-[#181818] to-[#121212] border-t border-emerald-500/40 px-4 py-2.5 flex items-center justify-between text-xs text-emerald-300">
+                <div className="flex items-center gap-2 truncate">
+                  <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                  </span>
+                  <span className="font-bold text-white flex-shrink-0">🎧 AI DJ đang phát:</span>
+                  <span className="truncate text-emerald-200 font-medium">
+                    {autoPlayToast.name} - {autoPlayToast.artist}
+                  </span>
+                  {autoPlayToast.isMv && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-red-600 text-white font-bold flex-shrink-0 ml-1">
+                      MV
+                    </span>
+                  )}
+                </div>
+                <span className="text-[11px] text-emerald-400 font-medium ml-2 flex-shrink-0 flex items-center gap-1">
+                  Đang phát trực tiếp ✨
+                </span>
+              </div>
+            )}
+
             {/* Ô nhập tin nhắn */}
             <form
               onSubmit={handleSubmit}
@@ -638,7 +747,7 @@ const Chat: React.FC = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={
                     selectedUser.isAi
-                      ? "Hỏi Spotify AI: Gợi ý nhạc buồn, nhạc gym, hit Tam Thái Tử, nhạc đi cafe..."
+                      ? "Ra lệnh cho AI: 'Mở bài Tam Thái Tử', 'Phát nhạc Sơn Tùng', 'Xem MV Hoa Trong Đá'..."
                       : "Nhập tin nhắn..."
                   }
                   className="flex-1 px-4 py-2.5 bg-[#242424] border border-[#333] rounded-full text-sm text-white placeholder-gray-400 focus:ring-1 focus:ring-[#1DB954] outline-none transition"
