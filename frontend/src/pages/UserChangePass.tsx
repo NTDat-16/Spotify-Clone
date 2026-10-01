@@ -66,8 +66,12 @@ interface ChangePasswordProps {
                     confirm_new_password: confirmNewPassword,
                 }
             );
-            const updatedUser = response.data;
-            updatedUser.is_premium = Boolean(updatedUser.is_premium);
+            const updatedUser = {
+                ...user,
+                ...response.data,
+                isPremium: Boolean(response.data?.isPremium ?? response.data?.is_premium ?? user?.is_premium),
+                is_premium: Boolean(response.data?.isPremium ?? response.data?.is_premium ?? user?.is_premium),
+            };
             setUser(updatedUser);
             localStorage.setItem("user", JSON.stringify(updatedUser));
             setSuccess("Đổi mật khẩu thành công!");

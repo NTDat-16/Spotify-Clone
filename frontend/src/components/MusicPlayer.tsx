@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useAudio } from "../AudioContext";
+import { useAudio, isPremiumSong } from "../AudioContext";
 import {
   PlayIcon,
   PauseIcon,
@@ -11,6 +11,8 @@ import {
   ClockIcon,
   MicIcon,
   Heart,
+  Tv,
+  Loader2,
 } from "lucide-react";
 import SleepTimer from "./SleepTimer";
 import LyricsModal from "./LyricsModal";
@@ -28,16 +30,19 @@ const MusicPlayer: React.FC = () => {
     duration,
     setSongList,
     songList,
+    volume,
+    setVolume,
+    isMvMode,
+    toggleMvMode,
+    playbackSource,
+    isLoadingExternal,
   } = useAudio();
 
   const [isShuffled, setIsShuffled] = useState(false);
   const [repeatMode, setRepeatMode] = useState<"off" | "one" | "all">("off");
-  const [volume, setVolume] = useState(() => {
-    return Number(localStorage.getItem("volume")) || 0.75;
-  });
   const [originalSongList, setOriginalSongList] = useState(songList);
   const [showSleepTimer, setShowSleepTimer] = useState(false);
-  const [showLyric, setShowLyric] = useState(false)
+  const [showLyric, setShowLyric] = useState(false);
   const [timerRemaining, setTimerRemaining] = useState<number | null>(null);
   const [isLoved, setIsLoved] = useState(false);
 
@@ -57,46 +62,7 @@ const MusicPlayer: React.FC = () => {
     return () => window.removeEventListener("loved-songs-updated", handleUpdate);
   }, [currentSong]);
 
-  // Lưu âm lượng vào localStorage và cập nhật audio
-  useEffect(() => {
-    localStorage.setItem("volume", volume.toString());
-    const audio = document.querySelector("audio");
-    if (audio) {
-      audio.volume = volume;
-    }
-  }, [volume]);
-
-  // Xử lý khi bài hát kết thúc
-  useEffect(() => {
-    const audio = document.querySelector("audio");
-    if (!audio) {
-      return;
-    }
-
-    const handleEnded = () => {
-      console.log("Song ended, repeatMode:", repeatMode); // Debug
-      if (repeatMode === "one") {
-        seek(0);
-        audio.play().catch((err) => console.error("Error replaying song:", err));
-      } else if (repeatMode === "all") {
-        playNext();
-      } else {
-        const currentIndex = songList.findIndex(
-          (song) => song.id === currentSong?.id
-        );
-        if (currentIndex < songList.length - 1) {
-          playNext();
-        } else {
-          togglePlayPause();
-        }
-      }
-    };
-
-    audio.addEventListener("ended", handleEnded);
-    return () => {
-      audio.removeEventListener("ended", handleEnded);
-    };
-  }, [currentSong, repeatMode, songList, playNext, seek, togglePlayPause]);
+  // Âm lượng được đồng bộ tự động qua AudioContext (HTML5 Audio + YouTube Player)
 
   // Đếm ngược thời gian hẹn giờ
   useEffect(() => {
@@ -147,26 +113,39 @@ const MusicPlayer: React.FC = () => {
   // Hàm xử lý tua bài hát
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (duration) {
+      if (duration && Number.isFinite(duration)) {
         const rect = e.currentTarget.getBoundingClientRect();
-        const clickPosition = (e.clientX - rect.left) / rect.width;
-        const newTime = clickPosition * duration;
-        seek(newTime);
+        if (rect.width > 0) {
+          const clickPosition = Math.max(
+            0,
+            Math.min(1, (e.clientX - rect.left) / rect.width)
+          );
+          const newTime = clickPosition * duration;
+          seek(newTime);
+        }
       }
     },
     [duration, seek]
   );
 
   // Hàm xử lý thay đổi âm lượng
-  const handleVolumeChange = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickPosition = (e.clientX - rect.left) / rect.width;
-    const newVolume = Math.max(0, Math.min(1, clickPosition));
-    setVolume(newVolume);
-  }, []);
+  const handleVolumeChange = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      if (rect.width > 0) {
+        const clickPosition = Math.max(
+          0,
+          Math.min(1, (e.clientX - rect.left) / rect.width)
+        );
+        setVolume(clickPosition);
+      }
+    },
+    [setVolume]
+  );
 
   // Định dạng thời gian (MM:SS)
   const formatTime = (time: number) => {
+    if (!Number.isFinite(time) || time < 0) return "0:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
@@ -180,22 +159,59 @@ const MusicPlayer: React.FC = () => {
 
   if (!currentSong) return null;
 
+  const isCurrentSongPremium = isPremiumSong(currentSong);
+  const progressPercent =
+    duration > 0 && Number.isFinite(duration) && Number.isFinite(currentTime)
+      ? Math.min(100, Math.max(0, (currentTime / duration) * 100))
+      : 0;
+  const volumePercent = Math.min(100, Math.max(0, volume * 100));
+
   return (
-    <div className="h-20 bg-[#181818] border-t border-[#282828] px-4 flex items-center text-white relative">
+    <div className="h-20 bg-[#181818] border-t border-[#282828] px-4 flex items-center justify-between text-white relative w-full overflow-hidden select-none">
       {/* Thông tin bài hát */}
-      <div className="w-1/4 flex items-center gap-3">
+      <div className="w-1/4 min-w-[200px] max-w-[320px] flex items-center gap-3 flex-shrink-0">
         <img
           src={currentSong.image_url}
           alt={currentSong.name}
-          className="h-12 w-12 rounded object-cover"
+          className="h-12 w-12 rounded object-cover flex-shrink-0 shadow-md"
           loading="lazy"
           onError={(e) => {
             e.currentTarget.src = "/default-cover.png";
           }}
         />
-        <div className="min-w-0">
-          <h4 className="text-sm font-medium truncate">{currentSong.name}</h4>
-          <p className="text-xs text-gray-400 truncate">{currentSong.artist}</p>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <h4 className="text-sm font-medium truncate" title={currentSong.name}>
+              {currentSong.name}
+            </h4>
+            {currentSong.source === "spotify" && (
+              <span
+                className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#1DB954] text-black flex-shrink-0"
+                title="Phát qua Spotify Catalog & YouTube Player"
+              >
+                Spotify
+              </span>
+            )}
+            {isCurrentSongPremium && (
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-600 text-white flex-shrink-0">
+                Premium
+              </span>
+            )}
+            {isLoadingExternal && (
+              <span
+                className="text-[10px] text-yellow-400 flex items-center gap-1 flex-shrink-0"
+                title="Đang nạp video YouTube..."
+              >
+                <Loader2 size={11} className="animate-spin" />
+              </span>
+            )}
+          </div>
+          <p
+            className="text-xs text-gray-400 truncate"
+            title={currentSong.artist}
+          >
+            {currentSong.artist}
+          </p>
         </div>
         <button
           onClick={() => {
@@ -205,20 +221,25 @@ const MusicPlayer: React.FC = () => {
             }
           }}
           title={isLoved ? "Xóa khỏi bài hát yêu thích" : "Lưu vào bài hát yêu thích"}
-          className="ml-2 text-gray-400 hover:text-white transition flex-shrink-0"
+          className="text-gray-400 hover:text-white transition flex-shrink-0"
         >
           <Heart
             size={18}
-            className={isLoved ? "fill-[#1DB954] text-[#1DB954]" : "text-gray-400 hover:text-white"}
+            className={
+              isLoved
+                ? "fill-[#1DB954] text-[#1DB954]"
+                : "text-gray-400 hover:text-white"
+            }
           />
         </button>
       </div>
 
-      {/* Điều khiển phát nhạc */}
-      <div className="w-2/4 flex flex-col items-center">
+      {/* Điều khiển phát nhạc (ở giữa) */}
+      <div className="flex-1 max-w-2xl min-w-0 px-4 flex flex-col items-center justify-center">
         <div className="flex items-center gap-4">
           <button
             onClick={handleShuffle}
+            title={isShuffled ? "Tắt phát ngẫu nhiên" : "Bật phát ngẫu nhiên"}
             className={`${
               isShuffled ? "text-green-500" : "text-gray-400"
             } hover:text-white transition`}
@@ -227,84 +248,112 @@ const MusicPlayer: React.FC = () => {
           </button>
           <button
             onClick={playPrevious}
+            title="Bài trước đó"
             className="text-gray-400 hover:text-white transition"
           >
             <SkipBackIcon size={20} />
           </button>
           <button
             onClick={togglePlayPause}
-            className="h-10 w-10 rounded-full bg-[#1DB954] text-black flex items-center justify-center hover:bg-[#1ed760] transition"
+            title={isPlaying ? "Tạm dừng" : "Phát"}
+            className="h-10 w-10 rounded-full bg-[#1DB954] text-black flex items-center justify-center hover:bg-[#1ed760] hover:scale-105 transition active:scale-95 shadow-md"
           >
-            {isPlaying ? <PauseIcon size={22} /> : <PlayIcon size={22} />}
+            {isPlaying ? (
+              <PauseIcon size={22} />
+            ) : (
+              <PlayIcon size={22} className="ml-0.5" />
+            )}
           </button>
           <button
             onClick={playNext}
+            title="Bài kế tiếp"
             className="text-gray-400 hover:text-white transition"
           >
             <SkipForwardIcon size={20} />
           </button>
           <button
             onClick={handleRepeat}
+            title={`Lặp lại: ${repeatMode}`}
             className={`${
               repeatMode !== "off" ? "text-green-500" : "text-gray-400"
             } hover:text-white transition relative`}
           >
             <RepeatIcon size={18} />
             {repeatMode === "one" && (
-              <span className="absolute text-xs -mt-2 ml-4 bg-green-500 rounded-full h-4 w-4 flex items-center justify-center">
+              <span className="absolute text-[10px] -mt-2 ml-4 bg-green-500 text-black font-bold rounded-full h-3.5 w-3.5 flex items-center justify-center">
                 1
               </span>
             )}
           </button>
         </div>
-        <div className="w-full mt-2 flex items-center gap-3">
-          <span className="text-xs text-gray-400">{formatTime(currentTime)}</span>
+
+        {/* Thanh tiến độ nghe */}
+        <div className="w-full mt-2 flex items-center gap-2">
+          <span className="text-[11px] text-gray-400 w-10 text-right tabular-nums flex-shrink-0">
+            {formatTime(currentTime)}
+          </span>
           <div
-            className="flex-1 h-1 bg-[#282828] rounded-full cursor-pointer"
+            className="flex-1 h-1 bg-[#282828] hover:h-1.5 rounded-full cursor-pointer relative overflow-hidden group transition-all"
             onClick={handleSeek}
           >
             <div
-              className="h-full bg-white rounded-full transition-all"
-              style={{ width: `${(currentTime / duration) * 100}%` }}
+              className="h-full bg-white group-hover:bg-[#1DB954] rounded-full transition-all"
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <span className="text-xs text-gray-400">{formatTime(duration)}</span>
+          <span className="text-[11px] text-gray-400 w-10 text-left tabular-nums flex-shrink-0">
+            {formatTime(duration)}
+          </span>
         </div>
       </div>
 
-      {/* Điều khiển âm lượng và hẹn giờ */}
-      <div className="w-1/4 flex justify-end items-center gap-2">
-      <div className="flex items-center gap-1">
+      {/* Điều khiển âm lượng, MV, lời bài hát và hẹn giờ */}
+      <div className="w-1/4 min-w-[200px] max-w-[320px] flex justify-end items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={toggleMvMode}
+            title={isMvMode ? "Thu nhỏ cửa sổ MV" : "Xem MV / Video (YouTube)"}
+            className={`p-1.5 rounded transition ${
+              isMvMode
+                ? "text-[#1DB954] bg-[#282828]"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <Tv size={18} />
+          </button>
+        </div>
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setShowLyric(true)}
-            className="text-gray-400 hover:text-white transition"
+            title="Xem lời bài hát"
+            className="text-gray-400 hover:text-white transition p-1.5"
           >
             <MicIcon size={18} />
           </button>
-          {timerRemaining !== null && (
-            <span className="text-xs text-gray-400">{formatTimer(timerRemaining)}</span>
-          )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setShowSleepTimer(true)}
+            title="Hẹn giờ ngủ"
             className="text-gray-400 hover:text-white transition"
           >
             <ClockIcon size={18} />
           </button>
           {timerRemaining !== null && (
-            <span className="text-xs text-gray-400">{formatTimer(timerRemaining)}</span>
+            <span className="text-[11px] text-green-400 font-mono">
+              {formatTimer(timerRemaining)}
+            </span>
           )}
         </div>
-        <div className="flex items-center gap-3">
-          <VolumeIcon size={16} className="text-gray-400" />
+        <div className="flex items-center gap-2">
+          <VolumeIcon size={16} className="text-gray-400 flex-shrink-0" />
           <div
-            className="w-24 h-1 bg-[#282828] rounded-full cursor-pointer"
+            className="w-24 h-1 hover:h-1.5 bg-[#282828] rounded-full cursor-pointer relative overflow-hidden group transition-all"
             onClick={handleVolumeChange}
           >
             <div
-              className="h-full bg-white rounded-full transition-all"
-              style={{ width: `${volume * 100}%` }}
+              className="h-full bg-white group-hover:bg-[#1DB954] rounded-full transition-all"
+              style={{ width: `${volumePercent}%` }}
             />
           </div>
         </div>
@@ -320,8 +369,9 @@ const MusicPlayer: React.FC = () => {
 
       {showLyric && (
         <LyricsModal
-          songId={currentSong?.id || 0}
+          isOpen={showLyric}
           onClose={() => setShowLyric(false)}
+          songId={currentSong.id}
         />
       )}
     </div>

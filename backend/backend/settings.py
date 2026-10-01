@@ -110,7 +110,8 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/audio/"
-MEDIA_ROOT = BASE_DIR / "audio"
+FRONTEND_AUDIO_DIR = (BASE_DIR / ".." / "frontend" / "public" / "audio").resolve()
+MEDIA_ROOT = FRONTEND_AUDIO_DIR if FRONTEND_AUDIO_DIR.exists() else (BASE_DIR / "audio")
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Set the deployed frontend URL in CORS_ALLOWED_ORIGINS.
@@ -138,3 +139,8 @@ CSRF_COOKIE_SECURE = os.getenv("VERCEL") == "1"
 PAYPAL_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID", "")
 PAYPAL_CLIENT_SECRET = os.getenv("PAYPAL_CLIENT_SECRET", "")
 PAYPAL_MODE = os.getenv("PAYPAL_MODE", "sandbox")
+
+# External APIs (Spotify Web API & YouTube)
+SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
+SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")

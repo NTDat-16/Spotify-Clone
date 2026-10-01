@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { API_ORIGIN } from "../../../config/api";
-import { PlayIcon, CircleEllipsis, Heart } from "lucide-react";
-import { useAudio } from "../../../AudioContext";
+import { PlayIcon, CircleEllipsis, Heart, Tv } from "lucide-react";
+import { useAudio, isPremiumSong, isUserPremiumAccount, Song } from "../../../AudioContext";
 import { useNavigate } from "react-router-dom";
 import { getLovedSongs, toggleLovedSong } from "../../../services/favorites";
+import { getAudioUrl } from "../../../utils/media";
+import { getSpotifyNewReleases } from "../../../services/spotify";
 
-interface Song {
-  id: number;
-  name: string;
-  artist: string;
-  album: string | null;
-  duration: number;
-  song_url: string;
-  image_url: string;
-  premium: number;
-}
 interface Album {
   id: number;
   name: string;
@@ -25,18 +17,15 @@ interface Album {
 const Home: React.FC = () => {
   const { handlePlaySong, setSongList } = useAudio();
   const [topSongs, setTopSongs] = useState<Song[]>([]);
+  const [spotifyReleases, setSpotifyReleases] = useState<Song[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [albums, setAlbums] = useState<Album[]>([]);
-  const [lovedIds, setLovedIds] = useState<Set<number>>(() => new Set(getLovedSongs().map((s) => s.id)));
-
-  // Lấy trạng thái premium từ localStorage
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const isPremiumUser = user?.isPremium === true;
+  const [lovedIds, setLovedIds] = useState<Set<string>>(() => new Set(getLovedSongs().map((s) => String(s.id))));
 
   useEffect(() => {
     const handleUpdate = () => {
-      setLovedIds(new Set(getLovedSongs().map((s) => s.id)));
+      setLovedIds(new Set(getLovedSongs().map((s) => String(s.id))));
     };
     window.addEventListener("loved-songs-updated", handleUpdate);
     return () => window.removeEventListener("loved-songs-updated", handleUpdate);
@@ -99,17 +88,27 @@ const Home: React.FC = () => {
       }
     };
 
+    const fetchSpotifyReleases = async () => {
+      try {
+        const releases = await getSpotifyNewReleases();
+        setSpotifyReleases(releases);
+      } catch (err) {
+        console.error("Lỗi khi tải gợi ý từ Spotify:", err);
+      }
+    };
+
     fetchAlbums();
     fetchTopSongs();
+    fetchSpotifyReleases();
   }, [setSongList]);
 
   const handleDownload = (e: React.MouseEvent, song: Song) => {
     e.stopPropagation();
-    if (song.premium === 1 && !isPremiumUser) {
+    if (isPremiumSong(song) && !isUserPremiumAccount()) {
       alert("Bạn cần tài khoản Premium để tải bài hát này.");
       return;
     }
-    const songUrl = `${API_ORIGIN}/audio/${song.song_url}`;
+    const songUrl = getAudioUrl(song.song_url);
     const xhr = new XMLHttpRequest();
     xhr.open("GET", songUrl, true);
     xhr.responseType = "blob";
@@ -138,6 +137,81 @@ const Home: React.FC = () => {
       {error && (
         <p className="text-red-400 bg-red-900/50 p-3 rounded-lg mb-4">{error}</p>
       )}
+      {/* Khám phá Spotify Catalog & Video MV */}
+      {spotifyReleases.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded text-xs font-bold bg-[#1DB954] text-black">
+                  Spotify
+                </span>
+                <h2 className="text-2xl md:text-3xl font-bold">Khám phá từ Spotify & Video MV</h2>
+              </div>
+              <p className="text-sm text-gray-400 mt-1">
+                Phát trực tuyến nhạc mới qua Spotify Web API và YouTube Player API
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {spotifyReleases.map((item) => (
+              <div
+                key={item.id}
+                className="bg-[#181818] p-3 rounded-lg hover:bg-[#282828] transition-all group cursor-pointer flex flex-col justify-between"
+                onClick={() => {
+                  setSongList(spotifyReleases);
+                  handlePlaySong(item, false);
+                }}
+              >
+                <div className="relative aspect-square w-full rounded-md overflow-hidden mb-3">
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.src = "/default-cover.png";
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSongList(spotifyReleases);
+                        handlePlaySong(item, false);
+                      }}
+                      title="Phát nhạc"
+                      className="w-10 h-10 rounded-full bg-[#1DB954] text-black flex items-center justify-center hover:scale-110 transition shadow-lg"
+                    >
+                      <PlayIcon size={20} className="ml-0.5 fill-current" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSongList(spotifyReleases);
+                        handlePlaySong(item, true);
+                      }}
+                      title="Xem MV (YouTube)"
+                      className="w-9 h-9 rounded-full bg-white/20 backdrop-blur text-white flex items-center justify-center hover:scale-110 hover:bg-white/40 transition"
+                    >
+                      <Tv size={16} />
+                    </button>
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-sm truncate text-white group-hover:text-[#1DB954] transition" title={item.name}>
+                    {item.name}
+                  </h3>
+                  <p className="text-xs text-gray-400 truncate mt-1" title={item.artist}>
+                    {item.artist}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <section>
         <h2 className="text-3xl font-bold mb-4">Danh sách các Albums</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -175,38 +249,46 @@ const Home: React.FC = () => {
             <p className="p-4 text-gray-400">Không có bài hát nào trong bảng xếp hạng.</p>
           ) : (
             <div className="divide-y divide-[#282828]">
-              {topSongs.map((song, index) => (
-                <div
-                  key={song.id}
-                  className="flex items-center p-4 hover:bg-[#282828] transition-all cursor-pointer"
-                  onClick={() => handlePlaySong(song)}
-                >
-                  <span className="w-12 text-lg font-bold text-gray-400">
-                    #{index + 1}
-                  </span>
-                  <div className="flex items-center flex-1 min-w-0">
-                    <div className="relative group flex-shrink-0">
-                      <img
-                        src={song.image_url}
-                        alt={song.name}
-                        className="w-12 h-12 object-cover rounded-md"
-                      />
-                      <button className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
-                        <PlayIcon size={20} className="text-green-500" />
-                      </button>
-                    </div>
-                    <div className="ml-4 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-md truncate">{song.name}</h3>
-                        {song.premium === 1 && (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white">
-                            Premium
-                          </span>
-                        )}
+              {topSongs.map((song, index) => {
+                const songIsPremium = isPremiumSong(song);
+                return (
+                  <div
+                    key={song.id}
+                    className="flex items-center p-4 hover:bg-[#282828] transition-all cursor-pointer"
+                    onClick={() => {
+                      if (songIsPremium && !isUserPremiumAccount()) {
+                        alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức.");
+                        return;
+                      }
+                      handlePlaySong(song);
+                    }}
+                  >
+                    <span className="w-12 text-lg font-bold text-gray-400">
+                      #{index + 1}
+                    </span>
+                    <div className="flex items-center flex-1 min-w-0">
+                      <div className="relative group flex-shrink-0">
+                        <img
+                          src={song.image_url}
+                          alt={song.name}
+                          className="w-12 h-12 object-cover rounded-md"
+                        />
+                        <button className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md opacity-0 group-hover:opacity-100 transition-opacity">
+                          <PlayIcon size={20} className="text-green-500" />
+                        </button>
                       </div>
-                      <p className="text-sm text-gray-400 truncate">{song.artist}</p>
+                      <div className="ml-4 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium text-md truncate">{song.name}</h3>
+                          {songIsPremium && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white">
+                              Premium
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-400 truncate">{song.artist}</p>
+                      </div>
                     </div>
-                  </div>
                   <div className="w-24 text-sm text-gray-400 text-center">
                     {formatDuration(song.duration)}
                   </div>
@@ -233,7 +315,8 @@ const Home: React.FC = () => {
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
           )}
         </div>

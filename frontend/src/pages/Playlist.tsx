@@ -9,7 +9,8 @@ import {
   CircleEllipsis,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
-import { useAudio } from "../AudioContext";
+import { useAudio, isPremiumSong, isUserPremiumAccount } from "../AudioContext";
+import { getAudioUrl } from "../utils/media";
 
 type Song = {
   id: number;
@@ -138,6 +139,10 @@ const Playlist: React.FC = () => {
 
   const handlePlaySongClick = useCallback(
     (song: Song) => {
+      if (isPremiumSong(song) && !isUserPremiumAccount()) {
+        alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức.");
+        return;
+      }
       handlePlaySong(song);
     },
     [handlePlaySong]
@@ -225,11 +230,11 @@ const Playlist: React.FC = () => {
   const handleDownload = useCallback(
     (e: React.MouseEvent, song: Song) => {
       e.stopPropagation();
-      if (song.premium === 1 && !isPremiumUser) {
+      if (isPremiumSong(song) && !isUserPremiumAccount()) {
         alert("Bạn cần tài khoản Premium để tải bài hát này.");
         return;
       }
-      const songUrl = `${API_ORIGIN}/audio/${song.song_url}`;
+      const songUrl = getAudioUrl(song.song_url);
       const xhr = new XMLHttpRequest();
       xhr.open("GET", songUrl, true);
       xhr.responseType = "blob";
@@ -247,7 +252,7 @@ const Playlist: React.FC = () => {
       };
       xhr.send();
     },
-    [isPremiumUser]
+    []
   );
 
   const filteredSongs = availableSongs.filter(
@@ -332,9 +337,19 @@ const Playlist: React.FC = () => {
           <div className="mt-4 flex items-center gap-4">
             <button
               className="px-6 py-2 bg-blue-600 text-white rounded-full flex items-center gap-2 hover:bg-blue-700 transition-colors"
-              onClick={() =>
-                playlist.songs[0] && handlePlaySongClick(playlist.songs[0].song)
-              }
+              onClick={() => {
+                if (playlist.songs.length > 0) {
+                  const isUserPremium = isUserPremiumAccount();
+                  const firstPlayableItem = isUserPremium
+                    ? playlist.songs[0]
+                    : playlist.songs.find((item) => !isPremiumSong(item.song));
+                  if (firstPlayableItem) {
+                    handlePlaySongClick(firstPlayableItem.song);
+                  } else {
+                    alert("Tất cả bài hát trong playlist đều yêu cầu tài khoản Premium!");
+                  }
+                }
+              }}
             >
               <PlayIcon size={18} />
               Phát tất cả
@@ -376,7 +391,7 @@ const Playlist: React.FC = () => {
                   <div>
                     <div className="text-sm font-medium text-white flex items-center gap-2">
                       {song.name}
-                      {song.premium === 1 && (
+                      {isPremiumSong(song) && (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors">
                           Premium
                         </span>
@@ -438,7 +453,7 @@ const Playlist: React.FC = () => {
                       <div>
                         <div className="text-sm font-medium text-white flex items-center gap-2">
                           {song.name}
-                          {song.premium === 1 && (
+                          {isPremiumSong(song) && (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors">
                               Premium
                             </span>

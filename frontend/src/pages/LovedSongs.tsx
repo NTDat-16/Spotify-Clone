@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { PlayIcon, Clock3Icon, Trash2Icon, Heart, Music } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAudio } from "../AudioContext";
+import { useAudio, isPremiumSong, isUserPremiumAccount } from "../AudioContext";
 import { getLovedSongs, removeLovedSong, LovedSong } from "../services/favorites";
 
 const LovedSongs: React.FC = () => {
@@ -21,16 +21,28 @@ const LovedSongs: React.FC = () => {
 
   const handlePlayAll = () => {
     if (lovedSongs.length === 0) return;
-    setSongList(lovedSongs as any);
-    handlePlaySong(lovedSongs[0] as any);
+    const isUserPremium = isUserPremiumAccount();
+    const firstPlayableSong = isUserPremium
+      ? lovedSongs[0]
+      : lovedSongs.find((s) => !isPremiumSong(s));
+    if (firstPlayableSong) {
+      setSongList(lovedSongs as any);
+      handlePlaySong(firstPlayableSong as any);
+    } else {
+      alert("Tất cả bài hát yêu thích đều yêu cầu tài khoản Premium!");
+    }
   };
 
   const handlePlayOne = (song: LovedSong) => {
+    if (isPremiumSong(song) && !isUserPremiumAccount()) {
+      alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức.");
+      return;
+    }
     setSongList(lovedSongs as any);
     handlePlaySong(song as any);
   };
 
-  const handleRemove = (e: React.MouseEvent, songId: number) => {
+  const handleRemove = (e: React.MouseEvent, songId: number | string) => {
     e.stopPropagation();
     removeLovedSong(songId);
   };
@@ -135,8 +147,13 @@ const LovedSongs: React.FC = () => {
                         }}
                       />
                       <div className="min-w-0">
-                        <div className="text-sm font-medium text-white truncate max-w-xs">
+                        <div className="text-sm font-medium text-white truncate max-w-xs flex items-center gap-2">
                           {song.name}
+                          {isPremiumSong(song) && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white">
+                              Premium
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-gray-400 truncate max-w-xs">{song.artist}</div>
                       </div>

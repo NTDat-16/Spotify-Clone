@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { API_ORIGIN } from "../config/api";
 import { Plus, Edit, Trash, RotateCcw, Save, XCircle, Music } from "lucide-react";
+import { getAudioUrl } from "../utils/media";
 
 interface Artist {
     id: number;
@@ -232,7 +233,7 @@ export default function SongManager() {
             lyrics: song.lyrics || "",
         });
         setEditingSongId(song.id);
-        setAudioPreview(song.song_url ? `${BASE_URL}/audio/${song.song_url}` : null);
+        setAudioPreview(song.song_url ? getAudioUrl(song.song_url) : null);
         setAudioDuration(song.duration);
         setIsFormVisible(true);
     };
@@ -453,7 +454,7 @@ export default function SongManager() {
                                         <td className="p-5">
                                             {song.song_url ? (
                                                 <audio controls className="w-full max-w-[300px] h-10">
-                                                    <source src={`${BASE_URL}/audio/${song.song_url}`} type="audio/mpeg" />
+                                                    <source src={getAudioUrl(song.song_url)} type="audio/mpeg" />
                                                 </audio>
                                             ) : (
                                                 <span className="text-gray-500 italic">Không có file</span>

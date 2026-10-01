@@ -1,6 +1,7 @@
 import { API_ORIGIN } from "../config/api";
-        import React, { useState, useRef, useEffect } from "react";
-        import { useAudio } from "../AudioContext";
+import React, { useState, useRef, useEffect } from "react";
+import { useAudio } from "../AudioContext";
+import { getAudioUrl } from "../utils/media";
 
         interface LyricsModalProps {
             songId: number;
@@ -133,13 +134,13 @@ import { API_ORIGIN } from "../config/api";
                                 {songData && songData.audioUrl && songData.audioUrl.toLowerCase().endsWith('.mp4') ? (
                                     <video
                                         ref={videoRef}
-                                        src={`${baseUrl}/audio/${songData.audioUrl}`} 
+                                        src={getAudioUrl(songData.audioUrl)} 
                                         loop
                                         muted
                                         playsInline
                                         className="h-full w-full object-cover rounded-xl transition-transform duration-500 group-hover:scale-105 border border-[#2A2A2A] shadow-lg"
-                                        onError={(e) => console.error('Không tải được video:', `${baseUrl}/audio/${songData.audioUrl}`, e)}
-                                        onLoadedData={() => console.log('Video tải thành công:', `${baseUrl}/audio/${songData.audioUrl}`)}
+                                        onError={(e) => console.error('Không tải được video:', getAudioUrl(songData.audioUrl), e)}
+                                        onLoadedData={() => console.log('Video tải thành công:', getAudioUrl(songData.audioUrl))}
                                     />
                                 ) : songData && (songData.audioUrl?.toLowerCase().endsWith('.mp3') || !songData.audioUrl) ? (
                                     <img

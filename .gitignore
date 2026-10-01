@@ -29,6 +29,7 @@ __pycache__/
 staticfiles/
 media/
 backend/staticfiles/
+backend/audio/
 
 # SQLite databases & local dumps
 *.sqlite3
@@ -74,9 +75,21 @@ lerna-debug.log*
 *.log
 
 # ==============================================================================
-# Vercel CLI (Local project link & deployment cache)
+# Vercel & Neon CLI
 # ==============================================================================
 .vercel/
+.neon
+.neon/
+
+
+# Large audio/video binaries
+*.mp3
+*.mp4
+*.wav
+*.flac
+*.m4a
+!frontend/public/audio/.gitkeep
+
 
 # ==============================================================================
 # IDEs, Code Editors & OS Files

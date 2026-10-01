@@ -35,6 +35,11 @@ from .views import (
     get_songs_by_album,
     get_song_by_id,
 )
+from .external_api import (
+    spotify_search,
+    spotify_new_releases,
+    youtube_search_video,
+)
 
 urlpatterns = [
     # Songs
@@ -81,6 +86,11 @@ urlpatterns = [
     #message
     path('api/messages/', get_messages_between_users, name='get_messages_between_users'),
     path('api/send_message/', send_message, name='send_message'),
+    # External APIs (Spotify Web API & YouTube IFrame API)
+    path('api/external/spotify/search/', spotify_search, name='spotify_search'),
+    path('api/external/spotify/new-releases/', spotify_new_releases, name='spotify_new_releases'),
+    path('api/external/youtube/search/', youtube_search_video, name='youtube_search_video'),
+
     # Audio media serving (works both locally and in production)
     re_path(r'^audio/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { API_ORIGIN } from "../config/api";
 import { PlayIcon, Clock, MoreHorizontal, Download } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAudio } from "../AudioContext";
+import { useAudio, isPremiumSong, isUserPremiumAccount } from "../AudioContext";
+import { getAudioUrl } from "../utils/media";
 
 interface Song {
     id: number;
@@ -105,27 +106,45 @@ const ViewAlbum: React.FC = () => {
     }, [id, setSongList]);
 
     const handleDownload = (song: Song) => {
-        if (song.premium === 1) {
-            alert('Bài hát này chỉ dành cho Premium!');
+        if (isPremiumSong(song) && !isUserPremiumAccount()) {
+            alert('Bài hát này chỉ dành cho tài khoản Premium!');
             return;
         }
-        alert(`Đang tải ${song.name}...`);
-        // Thêm logic tải file thực tế tại đây
+        const songUrl = getAudioUrl(song.song_url);
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", songUrl, true);
+        xhr.responseType = "blob";
+        xhr.onload = () => {
+            const blob = xhr.response;
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", `${song.name}.mp3`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        };
+        xhr.onerror = () => {
+            alert("Không thể tải bài hát này.");
+        };
+        xhr.send();
     };
 
     const handlePlayAll = () => {
         if (albumData?.songs && albumData.songs.length > 0) {
-            const firstNonPremiumSong = albumData.songs.find(song => song.premium !== 1);
-            if (firstNonPremiumSong) {
+            const isUserPremium = isUserPremiumAccount();
+            const firstPlayableSong = isUserPremium
+                ? albumData.songs[0]
+                : albumData.songs.find(song => !isPremiumSong(song));
+            if (firstPlayableSong) {
                 handlePlaySong({
-                    id: firstNonPremiumSong.id,
-                    name: firstNonPremiumSong.name,
-                    artist: firstNonPremiumSong.artist_name,
+                    id: firstPlayableSong.id,
+                    name: firstPlayableSong.name,
+                    artist: firstPlayableSong.artist_name,
                     album: albumData.name,
-                    duration: firstNonPremiumSong.duration,
-                    song_url: firstNonPremiumSong.song_url,
-                    image_url: firstNonPremiumSong.album_img ? `/uploads/albums/${firstNonPremiumSong.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png'),
-                    premium: firstNonPremiumSong.premium
+                    duration: firstPlayableSong.duration,
+                    song_url: firstPlayableSong.song_url,
+                    image_url: firstPlayableSong.album_img ? `/uploads/albums/${firstPlayableSong.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png'),
+                    premium: firstPlayableSong.premium
                 });
             } else {
                 alert('Tất cả bài hát trong album này đều yêu cầu Premium!');
@@ -199,64 +218,74 @@ const ViewAlbum: React.FC = () => {
                         <div className="col-span-1 font-semibold"></div>
                     </div>
 
-                    {albumData.songs.map((song, index) => (
-                        <div
-                            key={song.id}
-                            className="grid grid-cols-12 gap-4 items-center py-3 hover:bg-[#383838] rounded-md px-3 transition-colors duration-200 cursor-pointer group"
-                            onClick={() => handlePlaySong({
-                                id: song.id,
-                                name: song.name,
-                                artist: song.artist_name,
-                                album: albumData.name,
-                                duration: song.duration,
-                                song_url: song.song_url,
-                                image_url: song.album_img ? `/uploads/albums/${song.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png'),
-                                premium: song.premium
-                            })}
-                        >
-                            <div className="col-span-1 text-gray-400">{index + 1}</div>
-                            <div className="col-span-5 flex items-center gap-3">
-                                <img
-                                    src={song.album_img ? `/uploads/albums/${song.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png')}
-                                    alt={song.name}
-                                    className="w-12 h-12 rounded-md object-cover"
-                                />
-                                <div>
-                                    <div className="flex items-center gap-3">
-                                        <p className="font-medium text-white">{song.name}</p>
-                                        {song.premium === 1 && (
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white">
-                                                Premium
-                                            </span>
-                                        )}
+                    {albumData.songs.map((song, index) => {
+                        const isSongPremium = isPremiumSong(song);
+                        const isUserPremium = isUserPremiumAccount();
+                        return (
+                            <div
+                                key={song.id}
+                                className="grid grid-cols-12 gap-4 items-center py-3 hover:bg-[#383838] rounded-md px-3 transition-colors duration-200 cursor-pointer group"
+                                onClick={() => {
+                                    if (isSongPremium && !isUserPremium) {
+                                        alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức.");
+                                        return;
+                                    }
+                                    handlePlaySong({
+                                        id: song.id,
+                                        name: song.name,
+                                        artist: song.artist_name,
+                                        album: albumData.name,
+                                        duration: song.duration,
+                                        song_url: song.song_url,
+                                        image_url: song.album_img ? `/uploads/albums/${song.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png'),
+                                        premium: song.premium
+                                    });
+                                }}
+                            >
+                                <div className="col-span-1 text-gray-400">{index + 1}</div>
+                                <div className="col-span-5 flex items-center gap-3">
+                                    <img
+                                        src={song.album_img ? `/uploads/albums/${song.album_img}` : (albumData.cover_image ? `/uploads/albums/${albumData.cover_image}` : '/default-cover.png')}
+                                        alt={song.name}
+                                        className="w-12 h-12 rounded-md object-cover"
+                                    />
+                                    <div>
+                                        <div className="flex items-center gap-3">
+                                            <p className="font-medium text-white">{song.name}</p>
+                                            {isSongPremium && (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white">
+                                                    Premium
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-sm text-gray-400 mt-1">{song.artist_name}</p>
                                     </div>
-                                    <p className="text-sm text-gray-400 mt-1">{song.artist_name}</p>
+                                </div>
+                                <div className="col-span-3 text-gray-400">
+                                    {albumData.relatedAlbums[0]?.name || albumData.name}
+                                </div>
+                                <div className="col-span-2 text-gray-400 flex justify-end">
+                                    {formatDuration(song.duration)}
+                                </div>
+                                <div className="col-span-1 flex justify-end">
+                                    <button
+                                        className={`p-2 rounded-full transition-colors duration-200 ${
+                                            isSongPremium && !isUserPremium
+                                                ? 'text-gray-600 cursor-not-allowed' 
+                                                : 'text-gray-400 hover:text-white'
+                                        }`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDownload(song);
+                                        }}
+                                        disabled={isSongPremium && !isUserPremium}
+                                    >
+                                        <Download size={20} />
+                                    </button>
                                 </div>
                             </div>
-                            <div className="col-span-3 text-gray-400">
-                                {albumData.relatedAlbums[0]?.name || albumData.name}
-                            </div>
-                            <div className="col-span-2 text-gray-400 flex justify-end">
-                                {formatDuration(song.duration)}
-                            </div>
-                            <div className="col-span-1 flex justify-end">
-                                <button
-                                    className={`p-2 rounded-full transition-colors duration-200 ${
-                                        song.premium === 1 
-                                            ? 'text-gray-600 cursor-not-allowed' 
-                                            : 'text-gray-400 hover:text-white'
-                                    }`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleDownload(song);
-                                    }}
-                                    disabled={song.premium === 1}
-                                >
-                                    <Download size={20} />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>

@@ -230,6 +230,7 @@ import {
 import { Search, UserIcon} from "lucide-react";
 import Sidebar from "./components/Sidebar";
 import MusicPlayer from "./components/MusicPlayer";
+import YouTubePlayer from "./components/YouTubePlayer";
 import Playlist from "./pages/Playlist";
 import Home from "./components/Assets/HomeForm/Home";
 import AllSongs from "./pages/AllSongs";
@@ -331,6 +332,7 @@ function MainLayout({
         <main className="flex-1 bg-[#121212] overflow-y-auto p-0">
           {children}
         </main>
+        <YouTubePlayer />
         <MusicPlayer />
       </div>
     </div>

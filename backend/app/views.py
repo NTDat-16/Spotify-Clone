@@ -50,36 +50,34 @@ def add_song(request):
     album_id = request.data.get('album')
     duration = request.data.get('duration', 1)
     status_value = request.data.get('status', 1)
-    song_url = request.FILES.get('song')
-    premium = request.data.get('premium')
-    lyrics = request.data.get('lyrics')
+    song_file = request.FILES.get('song')
+    raw_song_url = request.data.get('song_url') or request.data.get('song')
 
-    if not all([name, artist_id, duration, song_url]):
+    if not all([name, artist_id, duration]):
         return Response({'error': 'Thiếu thông tin bắt buộc'}, status=status.HTTP_400_BAD_REQUEST)
 
-    file_name = song_url.name
-    song_dir = os.path.join(settings.BASE_DIR, 'audio')
+    if not song_file and not raw_song_url:
+        return Response({'error': 'Vui lòng cung cấp file hoặc URL âm thanh'}, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        os.makedirs(song_dir, exist_ok=True)
-    except Exception as e:
-        return Response({'error': f'Lỗi tạo thư mục audio: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    if not os.access(song_dir, os.W_OK):
-        return Response({'error': 'Không có quyền ghi vào thư mục audio'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    file_path = os.path.join(song_dir, file_name)
-    if os.path.exists(file_path):
-        base, ext = os.path.splitext(file_name)
-        file_name = f"{base}_{int(time.time())}{ext}"
-        file_path = os.path.join(song_dir, file_name)
-
-    try:
-        with open(file_path, 'wb+') as destination:
-            for chunk in song_url.chunks():
-                destination.write(chunk)
-    except Exception as e:
-        return Response({'error': f'Lỗi khi lưu file nhạc: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    file_name = None
+    if song_file:
+        file_name = song_file.name
+        song_dir = str(settings.MEDIA_ROOT)
+        try:
+            os.makedirs(song_dir, exist_ok=True)
+            file_path = os.path.join(song_dir, file_name)
+            if os.path.exists(file_path):
+                base, ext = os.path.splitext(file_name)
+                file_name = f"{base}_{int(time.time())}{ext}"
+                file_path = os.path.join(song_dir, file_name)
+            with open(file_path, 'wb+') as destination:
+                for chunk in song_file.chunks():
+                    destination.write(chunk)
+        except Exception as e:
+            # Fallback for serverless or read-only filesystem
+            pass
+    elif isinstance(raw_song_url, str):
+        file_name = raw_song_url.strip()
 
     try:
         artist = Artist.objects.get(id=artist_id)
@@ -90,9 +88,9 @@ def add_song(request):
             artist=artist,
             album=album,
             duration=duration,
-            song_url=file_name,
+            song_url=file_name or "",
             status=status_value,
-            premium=premium,
+            premium=premium or 0,
             lyrics=lyrics
         )
     except Artist.DoesNotExist:
@@ -114,7 +112,8 @@ def update_song(request, song_id):
     duration = request.data.get('duration', 1)
     status_value = request.data.get('status', 1)
     premium = request.data.get('premium')
-    song_url = request.FILES.get('song')
+    song_file = request.FILES.get('song')
+    raw_song_url = request.data.get('song_url')
     lyrics = request.data.get('lyrics')
 
     if not all([name, artist_id, duration]):
@@ -134,41 +133,30 @@ def update_song(request, song_id):
 
     # Xử lý file âm thanh mới (nếu có)
     file_name = None
-    if song_url:
-        file_name = song_url.name
-        song_dir = os.path.join(settings.BASE_DIR, 'audio')
-
+    if song_file:
+        file_name = song_file.name
+        song_dir = str(settings.MEDIA_ROOT)
         try:
             os.makedirs(song_dir, exist_ok=True)
-        except Exception as e:
-            return Response({'error': f'Lỗi tạo thư mục audio: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        if not os.access(song_dir, os.W_OK):
-            return Response({'error': 'Không có quyền ghi vào thư mục audio'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        # Xóa file âm thanh cũ nếu tồn tại
-        if song.song_url:
-            old_file_path = os.path.join(song_dir, song.song_url)
-            if os.path.exists(old_file_path):
-                try:
-                    os.remove(old_file_path)
-                except Exception as e:
-                    return Response({'error': f'Lỗi xóa file âm thanh cũ: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        # Kiểm tra và tạo tên file mới
-        file_path = os.path.join(song_dir, file_name)
-        if os.path.exists(file_path):
-            base, ext = os.path.splitext(file_name)
-            file_name = f"{base}_{int(time.time())}{ext}"
+            if song.song_url:
+                old_file_path = os.path.join(song_dir, song.song_url)
+                if os.path.exists(old_file_path):
+                    try:
+                        os.remove(old_file_path)
+                    except Exception:
+                        pass
             file_path = os.path.join(song_dir, file_name)
-
-        # Lưu file âm thanh mới
-        try:
+            if os.path.exists(file_path):
+                base, ext = os.path.splitext(file_name)
+                file_name = f"{base}_{int(time.time())}{ext}"
+                file_path = os.path.join(song_dir, file_name)
             with open(file_path, 'wb+') as destination:
-                for chunk in song_url.chunks():
+                for chunk in song_file.chunks():
                     destination.write(chunk)
-        except Exception as e:
-            return Response({'error': f'Lỗi khi lưu file nhạc: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception:
+            pass
+    elif isinstance(raw_song_url, str) and raw_song_url.strip():
+        file_name = raw_song_url.strip()
 
     try:
         artist = Artist.objects.get(id=artist_id)

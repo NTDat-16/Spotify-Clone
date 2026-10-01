@@ -249,8 +249,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, setUser }) => {
           password_hash: "",
         }
       );
-      setUser(response.data);
-      localStorage.setItem("user", JSON.stringify(response.data));
+      const updatedUser = {
+        ...user,
+        ...response.data,
+        isPremium: Boolean(response.data?.isPremium ?? user?.isPremium),
+      };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
       setSuccess("Cập nhật thông tin thành công!");
       setIsEditing(false);
     } catch (err: any) {
