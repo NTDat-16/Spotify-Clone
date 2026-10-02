@@ -227,7 +227,7 @@ import {
   Navigate,
   useNavigate,
 } from "react-router-dom";
-import { Search, UserIcon, Sparkles } from "lucide-react";
+import { Search, UserIcon, Sparkles, DownloadCloud } from "lucide-react";
 import Sidebar from "./components/Sidebar";
 import MusicPlayer from "./components/MusicPlayer";
 import YouTubePlayer from "./components/YouTubePlayer";
@@ -247,6 +247,7 @@ import UserProfile from "./pages/UserProfile";
 import UserChangePass from "./pages/UserChangePass";
 import ViewAlbum from "./pages/ViewAlbum";
 import PremiumSignup from "./pages/PremiumSignup";
+import CatalogImportModal from "./components/CatalogImportModal";
 
 type MainLayoutProps = {
   children: React.ReactNode;
@@ -279,6 +280,7 @@ function MainLayout({
 }: MainLayoutProps) {
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchQuery.trim()) {
@@ -306,6 +308,15 @@ function MainLayout({
             />
           </div>
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowImportModal(true)}
+              title="Tự động nạp thêm nhiều bài hát từ Apple Music & Spotify"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-[#282828] text-white hover:bg-[#333] border border-white/10 hover:border-white/20 transition shadow hover:scale-105 active:scale-95"
+            >
+              <DownloadCloud size={14} className="text-[#1DB954]" />
+              <span className="hidden sm:inline">Nạp thêm nhạc</span>
+            </button>
+
             {user?.isPremium ? (
               <button
                 onClick={() => navigate("/premium")}
@@ -355,10 +366,15 @@ function MainLayout({
         </main>
         <YouTubePlayer />
         <MusicPlayer />
+        <CatalogImportModal
+          isOpen={showImportModal}
+          onClose={() => setShowImportModal(false)}
+        />
       </div>
     </div>
   );
 }
+
 
 export function App() {
   const [showSleepTimer, setShowSleepTimer] = useState<boolean>(false);

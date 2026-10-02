@@ -346,3 +346,261 @@ def youtube_search_video(request):
         })
     else:
         return Response({'error': 'Không tìm thấy video phù hợp trên YouTube'}, status=status.HTTP_404_NOT_FOUND)
+
+
+def _save_tracks_to_db(items, is_rss=False):
+    """
+    Saves an iterable of track raw dicts to Neon DB.
+    Handles deduplication, models relations (Artist -> Album -> Song).
+    """
+    from datetime import datetime
+    import random
+    from .models import Song, Artist, Album
+
+    imported = 0
+    skipped = 0
+    saved_tracks = []
+
+    for item in items:
+        try:
+            if is_rss:
+                title = item.get('im:name', {}).get('label', '').strip()
+                artist_name = item.get('im:artist', {}).get('label', '').strip()
+                album_name = item.get('im:collection', {}).get('im:name', {}).get('label', '').strip()
+                release_str = item.get('im:releaseDate', {}).get('label', '')[:10]
+                images = item.get('im:image', [])
+                artwork = images[-1].get('label', '') if images else ''
+                duration = 210
+            else:
+                title = item.get('trackName', '').strip()
+                artist_name = item.get('artistName', '').strip()
+                album_name = item.get('collectionName', '').strip()
+                release_str = item.get('releaseDate', '')[:10]
+                artwork = item.get('artworkUrl100', '')
+                duration = int(item.get('trackTimeMillis', 210000) / 1000)
+
+            if not title:
+                continue
+
+            artist_name = artist_name or "Various Artists"
+            album_name = album_name or f"{title} - Single"
+            
+            # Clean and truncate to model field max_length (255)
+            title = title[:250].strip()
+            artist_name = artist_name[:250].strip()
+            album_name = album_name[:250].strip()
+
+            # Artwork resolution upgrade
+            if artwork:
+                artwork = re.sub(r'/\d+x\d+bb\.(jpg|png)', '/600x600bb.jpg', artwork)
+                artwork = artwork.replace('100x100bb.jpg', '600x600bb.jpg')[:250]
+
+            # Parse date safely
+            try:
+                release_date = datetime.strptime(release_str, '%Y-%m-%d').date()
+            except Exception:
+                release_date = datetime.now().date()
+
+            # 1. Artist
+            artist_obj, _ = Artist.objects.get_or_create(
+                name__iexact=artist_name,
+                defaults={'name': artist_name, 'status': 1}
+            )
+
+            # 2. Album
+            album_obj, _ = Album.objects.get_or_create(
+                name__iexact=album_name,
+                artist=artist_obj,
+                defaults={
+                    'name': album_name,
+                    'artist': artist_obj,
+                    'cover_image': artwork or 'default-album.jpg',
+                    'created_at': release_date,
+                    'status': 1
+                }
+            )
+            if artwork and (not album_obj.cover_image or album_obj.cover_image == 'default-album.jpg'):
+                album_obj.cover_image = artwork
+                album_obj.save(update_fields=['cover_image'])
+
+            # 3. Song
+            existing_song = Song.objects.filter(name__iexact=title, artist=artist_obj).first()
+            if existing_song:
+                skipped += 1
+            else:
+                is_vip = 1 if (random.random() < 0.15) else 0
+                play_cnt = random.randint(40000, 750000)
+                dur = duration if duration > 30 else random.randint(180, 260)
+
+                song_obj = Song.objects.create(
+                    name=title,
+                    artist=artist_obj,
+                    album=album_obj,
+                    duration=dur,
+                    song_url='', # Handled automatically by YouTube IFrame player
+                    status=1,
+                    premium=is_vip,
+                    play_count=play_cnt
+                )
+                imported += 1
+                saved_tracks.append({
+                    "id": song_obj.id,
+                    "name": song_obj.name,
+                    "artist": artist_obj.name,
+                    "album": album_obj.name,
+                    "image_url": artwork,
+                    "duration": song_obj.duration,
+                    "premium": song_obj.premium,
+                })
+        except Exception as err:
+            print(f"Error importing item: {err}")
+            continue
+
+    return imported, skipped, saved_tracks
+
+
+@api_view(['GET', 'POST'])
+def import_music_catalog(request):
+    """
+    Batch imports large collections of songs into the database:
+    - packs: 'vpop_top', 'usuk_top', 'kpop_top', 'rap_viet', 'ballad_viet', 'sontung_jack', 'mega'
+    - query: custom artist or genre search query (e.g. 'Taylor Swift')
+    - limit: number of songs to fetch per request (default 50, max 100)
+    """
+    from .models import Song
+    
+    pack = request.data.get('pack') if request.method == 'POST' else request.GET.get('pack', '')
+    query = request.data.get('query') if request.method == 'POST' else request.GET.get('query', '')
+    limit = int(request.data.get('limit') if request.method == 'POST' else request.GET.get('limit', 50))
+    limit = max(10, min(limit, 100))
+    country = request.data.get('country') if request.method == 'POST' else request.GET.get('country', 'VN')
+
+    total_imported = 0
+    total_skipped = 0
+    all_saved = []
+
+    try:
+        # Custom query search
+        if query:
+            q_enc = urllib.parse.quote(query)
+            search_url = f"https://itunes.apple.com/search?term={q_enc}&entity=song&limit={limit}&country={country}"
+            res = requests.get(search_url, timeout=10)
+            if res.status_code == 200:
+                results = res.json().get('results', [])
+                imp, skp, trs = _save_tracks_to_db(results, is_rss=False)
+                total_imported += imp
+                total_skipped += skp
+                all_saved.extend(trs)
+
+        # Preset Packs
+        elif pack == 'mega':
+            # Mega Pack: fetches multiple rich collections
+            tasks = [
+                ("https://itunes.apple.com/vn/rss/topsongs/limit=50/json", True),
+                ("https://itunes.apple.com/us/rss/topsongs/limit=40/json", True),
+                ("https://itunes.apple.com/kr/rss/topsongs/limit=30/json", True),
+                ("https://itunes.apple.com/search?term=rap+viet&entity=song&limit=30&country=VN", False),
+                ("https://itunes.apple.com/search?term=ballad+viet+nam&entity=song&limit=30&country=VN", False),
+            ]
+            for url, is_rss in tasks:
+                try:
+                    res = requests.get(url, timeout=10)
+                    if res.status_code == 200:
+                        data = res.json()
+                        items = data.get('feed', {}).get('entry', []) if is_rss else data.get('results', [])
+                        imp, skp, trs = _save_tracks_to_db(items, is_rss=is_rss)
+                        total_imported += imp
+                        total_skipped += skp
+                        all_saved.extend(trs)
+                except Exception as e:
+                    print(f"Error in mega pack task {url}: {e}")
+
+        elif pack == 'vpop_top':
+            rss_url = f"https://itunes.apple.com/vn/rss/topsongs/limit={limit}/json"
+            res = requests.get(rss_url, timeout=10)
+            if res.status_code == 200:
+                entries = res.json().get('feed', {}).get('entry', [])
+                imp, skp, trs = _save_tracks_to_db(entries, is_rss=True)
+                total_imported += imp
+                total_skipped += skp
+                all_saved.extend(trs)
+
+        elif pack == 'usuk_top':
+            rss_url = f"https://itunes.apple.com/us/rss/topsongs/limit={limit}/json"
+            res = requests.get(rss_url, timeout=10)
+            if res.status_code == 200:
+                entries = res.json().get('feed', {}).get('entry', [])
+                imp, skp, trs = _save_tracks_to_db(entries, is_rss=True)
+                total_imported += imp
+                total_skipped += skp
+                all_saved.extend(trs)
+
+        elif pack == 'kpop_top':
+            rss_url = f"https://itunes.apple.com/kr/rss/topsongs/limit={limit}/json"
+            res = requests.get(rss_url, timeout=10)
+            if res.status_code == 200:
+                entries = res.json().get('feed', {}).get('entry', [])
+                imp, skp, trs = _save_tracks_to_db(entries, is_rss=True)
+                total_imported += imp
+                total_skipped += skp
+                all_saved.extend(trs)
+
+        elif pack == 'rap_viet':
+            search_url = f"https://itunes.apple.com/search?term=rap+viet&entity=song&limit={limit}&country=VN"
+            res = requests.get(search_url, timeout=10)
+            if res.status_code == 200:
+                results = res.json().get('results', [])
+                imp, skp, trs = _save_tracks_to_db(results, is_rss=False)
+                total_imported += imp
+                total_skipped += skp
+                all_saved.extend(trs)
+
+        elif pack == 'ballad_viet':
+            search_url = f"https://itunes.apple.com/search?term=ballad+viet+nam&entity=song&limit={limit}&country=VN"
+            res = requests.get(search_url, timeout=10)
+            if res.status_code == 200:
+                results = res.json().get('results', [])
+                imp, skp, trs = _save_tracks_to_db(results, is_rss=False)
+                total_imported += imp
+                total_skipped += skp
+                all_saved.extend(trs)
+
+        elif pack == 'sontung_jack':
+            for kw in ["son tung m-tp", "jack j97"]:
+                search_url = f"https://itunes.apple.com/search?term={urllib.parse.quote(kw)}&entity=song&limit={int(limit/2)}&country=VN"
+                res = requests.get(search_url, timeout=10)
+                if res.status_code == 200:
+                    results = res.json().get('results', [])
+                    imp, skp, trs = _save_tracks_to_db(results, is_rss=False)
+                    total_imported += imp
+                    total_skipped += skp
+                    all_saved.extend(trs)
+
+        else:
+            # Default: V-Pop Top
+            rss_url = f"https://itunes.apple.com/vn/rss/topsongs/limit={limit}/json"
+            res = requests.get(rss_url, timeout=10)
+            if res.status_code == 200:
+                entries = res.json().get('feed', {}).get('entry', [])
+                imp, skp, trs = _save_tracks_to_db(entries, is_rss=True)
+                total_imported += imp
+                total_skipped += skp
+                all_saved.extend(trs)
+
+        total_songs_now = Song.objects.count()
+
+        return Response({
+            "success": True,
+            "message": f"Đã nạp thành công {total_imported} bài hát mới vào kho nhạc!",
+            "pack": pack or ("query: " + query),
+            "imported_count": total_imported,
+            "skipped_count": total_skipped,
+            "total_catalog_count": total_songs_now,
+            "sample_tracks": all_saved[:10]
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({
+            "success": False,
+            "error": str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

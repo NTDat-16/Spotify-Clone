@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { API_ORIGIN } from "../../../config/api";
-import { PlayIcon, CircleEllipsis, Heart, Tv, Sparkles, Flame, Disc, Radio } from "lucide-react";
+import { PlayIcon, CircleEllipsis, Heart, Tv, Sparkles, Flame, Disc, Radio, DownloadCloud } from "lucide-react";
 import { useAudio, isPremiumSong, isUserPremiumAccount, Song } from "../../../AudioContext";
 import { useNavigate } from "react-router-dom";
 import { getLovedSongs, toggleLovedSong } from "../../../services/favorites";
 import { getAudioUrl, getImageUrl } from "../../../utils/media";
 import { getSpotifyNewReleases } from "../../../services/spotify";
+import CatalogImportModal from "../../CatalogImportModal";
 
 interface Album {
   id: number;
@@ -22,76 +23,80 @@ const Home: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [lovedIds, setLovedIds] = useState<Set<string>>(() => new Set(getLovedSongs().map((s) => String(s.id))));
+  const [showImportModal, setShowImportModal] = useState<boolean>(false);
 
   const navigate = useNavigate();
+
+  const fetchTopSongs = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_ORIGIN}/api/songs/?ordering=-play_count`);
+      if (!response.ok) throw new Error("Không thể tải bảng xếp hạng.");
+      const data = await response.json();
+
+      const mappedSongs: Song[] = data.map((song: any) => ({
+        id: song.id,
+        name: song.name || "Unknown Song",
+        artist: song.artist_name || "Unknown Artist",
+        album: song.album_name || null,
+        duration: song.duration || 180,
+        song_url: song.song_url || "",
+        image_url: getImageUrl(song.album_img),
+        premium: song.premium || 0,
+        source: (song.song_url ? "local" : "spotify") as any,
+      }));
+
+      setTopSongs(mappedSongs);
+      setSongList(mappedSongs);
+    } catch (err) {
+      setError("Đã xảy ra lỗi khi tải danh sách bài hát.");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAlbums = async () => {
+    try {
+      const response = await fetch(`${API_ORIGIN}/api/albums/`);
+      if (!response.ok) throw new Error("Không thể tải danh sách album.");
+      const data = await response.json();
+      setAlbums(data);
+    } catch (err) {
+      console.error("Lỗi khi tải danh sách album:", err);
+    }
+  };
+
+  const fetchSpotifyReleases = async () => {
+    try {
+      const releases = await getSpotifyNewReleases();
+      setSpotifyReleases(releases);
+    } catch (err) {
+      console.error("Lỗi khi tải gợi ý từ Spotify:", err);
+    }
+  };
 
   useEffect(() => {
     const handleUpdate = () => {
       setLovedIds(new Set(getLovedSongs().map((s) => String(s.id))));
     };
+    const handleCatalogRefresh = () => {
+      fetchTopSongs();
+      fetchAlbums();
+      fetchSpotifyReleases();
+    };
+
     window.addEventListener("loved-songs-updated", handleUpdate);
-    return () => window.removeEventListener("loved-songs-updated", handleUpdate);
-  }, []);
-
-  const formatDuration = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
-
-  useEffect(() => {
-    const fetchTopSongs = async () => {
-      setIsLoading(true);
-      try {
-        const response = await fetch(`${API_ORIGIN}/api/songs/?ordering=-play_count`);
-        if (!response.ok) throw new Error("Không thể tải bảng xếp hạng.");
-        const data = await response.json();
-
-        const mappedSongs: Song[] = data.map((song: any) => ({
-          id: song.id,
-          name: song.name || "Unknown Song",
-          artist: song.artist_name || "Unknown Artist",
-          album: song.album_name || null,
-          duration: song.duration || 180,
-          song_url: song.song_url || "",
-          image_url: getImageUrl(song.album_img),
-          premium: song.premium || 0,
-          source: (song.song_url ? "local" : "spotify") as any,
-        }));
-
-        setTopSongs(mappedSongs);
-        setSongList(mappedSongs);
-      } catch (err) {
-        setError("Đã xảy ra lỗi khi tải danh sách bài hát.");
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const fetchAlbums = async () => {
-      try {
-        const response = await fetch(`${API_ORIGIN}/api/albums/`);
-        if (!response.ok) throw new Error("Không thể tải danh sách album.");
-        const data = await response.json();
-        setAlbums(data);
-      } catch (err) {
-        console.error("Lỗi khi tải danh sách album:", err);
-      }
-    };
-
-    const fetchSpotifyReleases = async () => {
-      try {
-        const releases = await getSpotifyNewReleases();
-        setSpotifyReleases(releases);
-      } catch (err) {
-        console.error("Lỗi khi tải gợi ý từ Spotify:", err);
-      }
-    };
+    window.addEventListener("catalog-updated", handleCatalogRefresh);
 
     fetchAlbums();
     fetchTopSongs();
     fetchSpotifyReleases();
+
+    return () => {
+      window.removeEventListener("loved-songs-updated", handleUpdate);
+      window.removeEventListener("catalog-updated", handleCatalogRefresh);
+    };
   }, [setSongList]);
 
   const handleDownload = (e: React.MouseEvent, song: Song) => {
@@ -205,6 +210,36 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Catalog Expand Promo Banner */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 md:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-[#18231c] to-[#121212] border border-emerald-500/30 shadow-xl">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-[#1DB954]/20 border border-[#1DB954]/40 flex items-center justify-center text-[#1DB954] flex-shrink-0">
+            <DownloadCloud size={24} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-white">
+                Mở rộng kho nhạc tự động
+              </h3>
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full font-bold bg-[#1DB954] text-black">
+                {topSongs.length} bài hát hiện có
+              </span>
+            </div>
+            <p className="text-xs text-gray-300 mt-1">
+              Bạn thấy kho nhạc ít? Nạp thêm hàng trăm bài hit mới nhất: Top V-Pop, Rap Việt, US-UK, K-Pop chỉ với 1 cú click!
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setShowImportModal(true)}
+          className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-[#1DB954] text-black text-xs font-black uppercase tracking-wide hover:bg-[#1ed760] hover:scale-105 active:scale-95 transition shadow-lg shadow-green-950 flex items-center justify-center gap-2 flex-shrink-0"
+        >
+          <Sparkles size={15} />
+          <span>Nạp Thêm Bài Hát</span>
+        </button>
+      </div>
 
       {/* 2. Quick Access Cards (Chào buổi sáng / Buổi tối) */}
       <section>
@@ -542,6 +577,11 @@ const Home: React.FC = () => {
           ))}
         </div>
       </section>
+
+      <CatalogImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+      />
     </div>
   );
 };
