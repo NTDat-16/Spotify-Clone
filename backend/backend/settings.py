@@ -118,7 +118,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Mặc định gồm local dev + production frontend; có thể ghi đè qua env trên Vercel.
 CORS_ALLOWED_ORIGINS = env_list(
     "CORS_ALLOWED_ORIGINS",
-    "http://localhost:5173,https://spotify-clone-14.vercel.app",
+    "http://localhost:5173,http://127.0.0.1:5173,https://spotify-clone-14.vercel.app",
 )
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.vercel\.app$",

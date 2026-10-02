@@ -97,6 +97,16 @@ def _normalize_title(text):
     stripped = ''.join(c for c in normalized if unicodedata.category(c) != 'Mn')
     return re.sub(r'[^a-z0-9 ]+', '', stripped.lower()).strip()
 
+def _format_cover_image(cover_image):
+    if not cover_image:
+        return "/default-cover.png"
+    cover_str = str(cover_image).strip()
+    if cover_str.startswith("http://") or cover_str.startswith("https://"):
+        return cover_str
+    if cover_str.startswith("/"):
+        return cover_str
+    return f"/uploads/albums/{cover_str}"
+
 def search_youtube_video_id(query):
     """
     Finds YouTube Video ID for a song query:
@@ -208,7 +218,7 @@ def spotify_search(request):
                 "artist": s.artist.name if s.artist else "Unknown Artist",
                 "album": s.album.name if s.album else None,
                 "duration": s.duration,
-                "image_url": f"/uploads/albums/{s.album.cover_image}" if (s.album and s.album.cover_image) else "/default-cover.png",
+                "image_url": _format_cover_image(s.album.cover_image if s.album else None),
                 "song_url": s.song_url,
                 "premium": s.premium,
                 "source": "local",
@@ -273,7 +283,7 @@ def spotify_new_releases(request):
                 "artist": s.artist.name if s.artist else "Unknown Artist",
                 "album": s.album.name if s.album else None,
                 "duration": s.duration,
-                "image_url": f"/uploads/albums/{s.album.cover_image}" if (s.album and s.album.cover_image) else "/default-cover.png",
+                "image_url": _format_cover_image(s.album.cover_image if s.album else None),
                 "song_url": s.song_url,
                 "premium": s.premium,
                 "source": "local",
