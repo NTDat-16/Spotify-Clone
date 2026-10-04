@@ -109,6 +109,15 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const ytPlayerRef = useRef<any>(null);
 
+  // Synchronization refs to eliminate stale closures and recursive listener loops
+  const playbackSourceRef = useRef<"audio" | "youtube">("audio");
+  const currentSongRef = useRef<Song | null>(null);
+  const isTransitioningRef = useRef<boolean>(false);
+
+  // Keep refs in sync with state
+  playbackSourceRef.current = playbackSource;
+  currentSongRef.current = currentSong;
+
   const registerYtPlayer = useCallback((player: any) => {
     ytPlayerRef.current = player;
   }, []);
@@ -126,53 +135,160 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Gắn các sự kiện HTML5 audio
-  useEffect(() => {
+  // Helper to safely stop HTML5 audio without triggering invalid-source error events
+  const stopAudioElementSafely = useCallback(() => {
     const audio = audioRef.current;
     if (!audio) return;
+    try {
+      audio.pause();
+      if (audio.hasAttribute("src")) {
+        audio.removeAttribute("src");
+        audio.load();
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
-    const updateTime = () => {
-      if (playbackSource === "audio") {
-        setCurrentTime(audio.currentTime);
-      }
-    };
-    const updateDuration = () => {
-      if (playbackSource === "audio" && Number.isFinite(audio.duration)) {
-        setDuration(audio.duration);
-      }
-    };
-    const handleEnded = () => {
-      if (playbackSource === "audio") {
-        playNext();
-      }
-    };
+  // Centralized YouTube playback dispatcher
+  const handlePlayViaYouTube = useCallback(async (song: Song, forceMvMode: boolean = false) => {
+    // 1. Immediately switch playbackSource ref to 'youtube' so any audio element events are ignored
+    playbackSourceRef.current = "youtube";
+    setPlaybackSource("youtube");
+    currentSongRef.current = song;
+    setCurrentSong(song);
+    setPlaybackHistory((prev) => [...prev, song].slice(-10));
+    setCurrentTime(0);
+    setDuration(song.duration || 210);
 
-    audio.addEventListener("timeupdate", updateTime);
-    audio.addEventListener("loadedmetadata", updateDuration);
-    audio.addEventListener("durationchange", updateDuration);
-    audio.addEventListener("ended", handleEnded);
-    audio.addEventListener("error", (e) => {
-      if (playbackSource === "audio" && currentSong) {
-        console.warn("Audio HTML5 error, tự động chuyển sang luồng YouTube:", e);
-        handlePlaySong({ ...currentSong, song_url: "" });
-      }
-    });
+    // 2. Safely stop and detach HTML5 audio
+    stopAudioElementSafely();
 
-    return () => {
-      audio.removeEventListener("timeupdate", updateTime);
-      audio.removeEventListener("loadedmetadata", updateDuration);
-      audio.removeEventListener("durationchange", updateDuration);
-      audio.removeEventListener("ended", handleEnded);
-      audio.removeEventListener("error", () => {});
-    };
-  }, [currentSong, songList, playbackSource]);
+    if (forceMvMode) {
+      setIsMvMode(true);
+    }
+
+    // 3. Resolve YouTube Video ID
+    setIsLoadingExternal(true);
+    try {
+      let vid = song.youtubeVideoId;
+      if (!vid) {
+        const ytResult = await getYouTubeVideoForSong(song.name, song.artist);
+        vid = ytResult?.video_id;
+      }
+      setIsLoadingExternal(false);
+
+      if (vid) {
+        setActiveVideoId(vid);
+        setIsPlaying(true);
+        if (ytPlayerRef.current && typeof ytPlayerRef.current.loadVideoById === "function") {
+          ytPlayerRef.current.loadVideoById({
+            videoId: vid,
+            startSeconds: 0,
+          });
+          ytPlayerRef.current.setVolume(Math.round(volume * 100));
+          ytPlayerRef.current.playVideo();
+        }
+      } else {
+        alert(`Không tìm thấy luồng phát YouTube cho bài hát "${song.name}".`);
+        setIsPlaying(false);
+      }
+    } catch (err) {
+      console.error("Lỗi khi phát nhạc từ YouTube API:", err);
+      setIsLoadingExternal(false);
+      setIsPlaying(false);
+    } finally {
+      isTransitioningRef.current = false;
+    }
+  }, [volume, stopAudioElementSafely]);
+
+  // Handle play song (HTML5 local audio or YouTube stream)
+  const handlePlaySong = useCallback(async (song: Song, forceMvMode: boolean = false) => {
+    const isUserPremium = isUserPremiumAccount();
+    if (isPremiumSong(song) && !isUserPremium) {
+      alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức trọn vẹn.");
+      if (isPlaying) {
+        if (playbackSourceRef.current === "audio" && audioRef.current) {
+          audioRef.current.pause();
+        } else if (playbackSourceRef.current === "youtube" && ytPlayerRef.current) {
+          ytPlayerRef.current.pauseVideo();
+        }
+        setIsPlaying(false);
+      }
+      return;
+    }
+
+    // Check if song can be played via HTML5 audio
+    const hasValidLocalAudio = Boolean(
+      song.song_url &&
+      (song.song_url.startsWith("http://") ||
+       song.song_url.startsWith("https://") ||
+       song.source === "local" ||
+       (!song.source && (song.song_url.endsWith(".mp3") || song.song_url.endsWith(".mp4"))))
+    );
+
+    const isExternalStream = forceMvMode || song.source === "spotify" || song.source === "youtube" || !hasValidLocalAudio;
+
+    // Trường hợp 1: Phát qua YouTube IFrame API (cho Spotify, YouTube, không có audio local, hoặc MV)
+    if (isExternalStream) {
+      await handlePlayViaYouTube(song, forceMvMode);
+      return;
+    }
+
+    // Trường hợp 2: Phát qua HTML5 audio
+    if (!audioRef.current) {
+      console.error("Audio element not found");
+      return;
+    }
+
+    // Tắt YouTube nếu đang phát
+    if (ytPlayerRef.current && typeof ytPlayerRef.current.pauseVideo === "function") {
+      try {
+        ytPlayerRef.current.pauseVideo();
+      } catch {
+        // ignore
+      }
+    }
+
+    playbackSourceRef.current = "audio";
+    setPlaybackSource("audio");
+    const audio = audioRef.current;
+    const audioUrl = getAudioUrl(song.song_url);
+
+    try {
+      if (String(currentSongRef.current?.id) === String(song.id) && playbackSourceRef.current === "audio") {
+        if (isPlaying) {
+          audio.pause();
+          setIsPlaying(false);
+        } else {
+          await audio.play();
+          setIsPlaying(true);
+        }
+      } else {
+        audio.pause();
+        currentSongRef.current = song;
+        setCurrentSong(song);
+        setPlaybackHistory((prev) => [...prev, song].slice(-10));
+        audio.src = audioUrl;
+        audio.volume = volume;
+        await audio.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.warn("Lỗi phát audio local HTML5, tự động chuyển sang YouTube:", error);
+      if (!isTransitioningRef.current) {
+        isTransitioningRef.current = true;
+        await handlePlayViaYouTube(song, false);
+      }
+    }
+  }, [isPlaying, volume, handlePlayViaYouTube]);
 
   const playNext = useCallback(() => {
-    if (!currentSong || songList.length === 0) return;
+    if (!currentSongRef.current || songList.length === 0) return;
 
     const isUserPremium = isUserPremiumAccount();
 
-    let currentIndex = songList.findIndex((song) => String(song.id) === String(currentSong.id));
+    let currentIndex = songList.findIndex((song) => String(song.id) === String(currentSongRef.current?.id));
     if (currentIndex === -1) currentIndex = 0;
 
     let nextIndex = (currentIndex + 1) % songList.length;
@@ -188,13 +304,13 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
       attempts++;
     }
     alert("Không có bài hát tiếp theo phù hợp để phát.");
-  }, [currentSong, songList]);
+  }, [songList, handlePlaySong]);
 
   const playPrevious = useCallback(() => {
-    if (!currentSong || songList.length === 0) return;
+    if (!currentSongRef.current || songList.length === 0) return;
     const isUserPremium = isUserPremiumAccount();
 
-    let currentIndex = songList.findIndex((song) => String(song.id) === String(currentSong.id));
+    let currentIndex = songList.findIndex((song) => String(song.id) === String(currentSongRef.current?.id));
     if (currentIndex === -1) currentIndex = 0;
 
     let prevIndex = (currentIndex - 1 + songList.length) % songList.length;
@@ -210,131 +326,71 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
       attempts++;
     }
     alert("Không có bài hát trước đó phù hợp để phát.");
-  }, [currentSong, songList]);
+  }, [songList, handlePlaySong]);
 
-  const handlePlaySong = async (song: Song, forceMvMode: boolean = false) => {
-    const isUserPremium = isUserPremiumAccount();
-    if (isPremiumSong(song) && !isUserPremium) {
-      alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức trọn vẹn.");
-      if (isPlaying) {
-        if (playbackSource === "audio" && audioRef.current) {
-          audioRef.current.pause();
-        } else if (playbackSource === "youtube" && ytPlayerRef.current) {
-          ytPlayerRef.current.pauseVideo();
-        }
-        setIsPlaying(false);
-      }
-      return;
-    }
-
-    const isSpotifyOrExternal = song.source === "spotify" || !song.song_url;
-
-    // Trường hợp 1: Phát qua YouTube IFrame API (Cho bài hát Spotify hoặc khi forceMvMode)
-    if (isSpotifyOrExternal || forceMvMode) {
-      try {
-        // Tắt HTML5 audio
-        if (audioRef.current) {
-          audioRef.current.pause();
-          audioRef.current.src = "";
-        }
-
-        setPlaybackSource("youtube");
-        setCurrentSong(song);
-        setPlaybackHistory((prev) => [...prev, song].slice(-10));
-        setCurrentTime(0);
-        setDuration(song.duration || 210);
-
-        if (forceMvMode) {
-          setIsMvMode(true);
-        }
-
-        // Tìm YouTube Video ID
-        setIsLoadingExternal(true);
-        let vid = song.youtubeVideoId;
-        if (!vid) {
-          const ytResult = await getYouTubeVideoForSong(song.name, song.artist);
-          vid = ytResult?.video_id;
-        }
-
-        setIsLoadingExternal(false);
-
-        if (vid) {
-          setActiveVideoId(vid);
-          setIsPlaying(true);
-          if (ytPlayerRef.current && typeof ytPlayerRef.current.loadVideoById === "function") {
-            ytPlayerRef.current.loadVideoById({
-              videoId: vid,
-              startSeconds: 0,
-            });
-            ytPlayerRef.current.setVolume(Math.round(volume * 100));
-            ytPlayerRef.current.playVideo();
-          }
-        } else {
-          alert(`Không tìm thấy video / luồng phát YouTube cho bài hát "${song.name}".`);
-          setIsPlaying(false);
-        }
-      } catch (err) {
-        console.error("Lỗi khi phát nhạc từ YouTube API:", err);
-        setIsLoadingExternal(false);
-        setIsPlaying(false);
-      }
-      return;
-    }
-
-    // Trường hợp 2: Bài hát local trong thư viện (HTML5 audio)
-    if (!audioRef.current) {
-      console.error("Audio element not found");
-      return;
-    }
-
-    // Tắt YouTube nếu đang phát
-    if (ytPlayerRef.current && typeof ytPlayerRef.current.pauseVideo === "function") {
-      try {
-        ytPlayerRef.current.pauseVideo();
-      } catch {
-        // ignore
-      }
-    }
-
-    setPlaybackSource("audio");
+  // Gắn các sự kiện HTML5 audio
+  useEffect(() => {
     const audio = audioRef.current;
-    const audioUrl = getAudioUrl(song.song_url);
+    if (!audio) return;
 
-    try {
-      if (String(currentSong?.id) === String(song.id) && playbackSource === "audio") {
-        if (isPlaying) {
-          audio.pause();
-          setIsPlaying(false);
-        } else {
-          await audio.play();
-          setIsPlaying(true);
-        }
-      } else {
-        audio.pause();
-        setCurrentSong(song);
-        setPlaybackHistory((prev) => [...prev, song].slice(-10));
-        audio.src = audioUrl;
-        audio.volume = volume;
-        await audio.play();
-        setIsPlaying(true);
+    const updateTime = () => {
+      if (playbackSourceRef.current === "audio" && audioRef.current) {
+        setCurrentTime(audioRef.current.currentTime);
       }
-    } catch (error) {
-      console.warn("Lỗi phát audio local, tự động chuyển sang YouTube:", error);
-      handlePlaySong({ ...song, song_url: "" });
-    }
-  };
+    };
+    const updateDuration = () => {
+      if (playbackSourceRef.current === "audio" && audioRef.current && Number.isFinite(audioRef.current.duration)) {
+        setDuration(audioRef.current.duration);
+      }
+    };
+    const handleEnded = () => {
+      if (playbackSourceRef.current === "audio") {
+        playNext();
+      }
+    };
+    const handleAudioError = (e: Event) => {
+      // Bỏ qua nếu đã chuyển sang luồng YouTube hoặc đang trong quá trình chuyển
+      if (playbackSourceRef.current !== "audio" || isTransitioningRef.current) return;
+      const curAudio = audioRef.current;
+      // Bỏ qua lỗi rỗng do reset src hoặc dọn dẹp audio element
+      if (!curAudio || !curAudio.currentSrc || curAudio.src === "" || curAudio.src === window.location.href) {
+        return;
+      }
+
+      console.warn("Audio HTML5 error, tự động chuyển sang luồng YouTube:", e);
+      const songToFallback = currentSongRef.current;
+      if (songToFallback) {
+        isTransitioningRef.current = true;
+        handlePlayViaYouTube(songToFallback, false);
+      }
+    };
+
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("loadedmetadata", updateDuration);
+    audio.addEventListener("durationchange", updateDuration);
+    audio.addEventListener("ended", handleEnded);
+    audio.addEventListener("error", handleAudioError);
+
+    return () => {
+      audio.removeEventListener("timeupdate", updateTime);
+      audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("durationchange", updateDuration);
+      audio.removeEventListener("ended", handleEnded);
+      audio.removeEventListener("error", handleAudioError);
+    };
+  }, [playNext, handlePlayViaYouTube]);
 
   const togglePlayPause = async () => {
-    if (!currentSong) return;
+    if (!currentSongRef.current) return;
 
     const isUserPremium = isUserPremiumAccount();
-    if (isPremiumSong(currentSong) && !isUserPremium) {
+    if (isPremiumSong(currentSongRef.current) && !isUserPremium) {
       alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức trọn vẹn.");
       return;
     }
 
     try {
-      if (playbackSource === "youtube") {
+      if (playbackSourceRef.current === "youtube") {
         if (isPlaying) {
           ytPlayerRef.current?.pauseVideo();
           setIsPlaying(false);
@@ -361,7 +417,7 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
   const seek = (time: number) => {
     if (!Number.isFinite(time)) return;
 
-    if (playbackSource === "youtube") {
+    if (playbackSourceRef.current === "youtube") {
       if (ytPlayerRef.current && typeof ytPlayerRef.current.seekTo === "function") {
         ytPlayerRef.current.seekTo(time, true);
         setCurrentTime(time);
@@ -375,46 +431,20 @@ export const AudioProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const toggleMvMode = async () => {
-    // Nếu đang tắt chế độ MV và muốn mở
     if (!isMvMode) {
-      if (!currentSong) {
+      if (!currentSongRef.current) {
         alert("Vui lòng chọn một bài hát để xem MV.");
         return;
       }
 
-      // Nếu đang phát qua YouTube thì chỉ cần mở dock
-      if (playbackSource === "youtube" && activeVideoId) {
+      if (playbackSourceRef.current === "youtube" && activeVideoId) {
         setIsMvMode(true);
         return;
       }
 
-      // Nếu đang phát nhạc local, tìm YouTube video và chuyển sang MV
-      setIsLoadingExternal(true);
-      const ytResult = await getYouTubeVideoForSong(currentSong.name, currentSong.artist);
-      setIsLoadingExternal(false);
-
-      if (ytResult?.video_id) {
-        if (audioRef.current) {
-          audioRef.current.pause();
-        }
-        setPlaybackSource("youtube");
-        setActiveVideoId(ytResult.video_id);
-        setIsMvMode(true);
-        setIsPlaying(true);
-
-        if (ytPlayerRef.current && typeof ytPlayerRef.current.loadVideoById === "function") {
-          ytPlayerRef.current.loadVideoById({
-            videoId: ytResult.video_id,
-            startSeconds: Math.floor(currentTime),
-          });
-          ytPlayerRef.current.setVolume(Math.round(volume * 100));
-          ytPlayerRef.current.playVideo();
-        }
-      } else {
-        alert(`Không tìm thấy MV chính thức cho "${currentSong.name}" trên YouTube.`);
-      }
+      // Nếu đang phát nhạc local, chuyển sang MV YouTube
+      await handlePlayViaYouTube(currentSongRef.current, true);
     } else {
-      // Đang mở -> Thu nhỏ MV về chế độ phát ngầm
       setIsMvMode(false);
     }
   };
