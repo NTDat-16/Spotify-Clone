@@ -85,6 +85,8 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = () => {
           fs: 1,
           playsinline: 1,
           enablejsapi: 1,
+          origin: window.location.origin,
+          widget_referrer: window.location.origin,
         },
         events: {
           onReady: (event: any) => {
