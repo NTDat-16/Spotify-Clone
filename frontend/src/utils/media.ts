@@ -27,3 +27,9 @@ export const getImageUrl = (imgUrl?: string | null): string => {
   return `/uploads/albums/${clean}`;
 };
 
+export const formatDuration = (seconds?: number | null): string => {
+  if (!seconds || !Number.isFinite(seconds) || seconds <= 0) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+};

@@ -4,7 +4,7 @@ import { PlayIcon, CircleEllipsis, Heart, Tv, Sparkles, Flame, Disc, Radio, Down
 import { useAudio, isPremiumSong, isUserPremiumAccount, Song } from "../../../AudioContext";
 import { useNavigate } from "react-router-dom";
 import { getLovedSongs, toggleLovedSong } from "../../../services/favorites";
-import { getAudioUrl, getImageUrl } from "../../../utils/media";
+import { getAudioUrl, getImageUrl, formatDuration } from "../../../utils/media";
 import { getSpotifyNewReleases } from "../../../services/spotify";
 import CatalogImportModal from "../../CatalogImportModal";
 
