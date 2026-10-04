@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { API_ORIGIN } from "../config/api";
 import axios from "axios";
 import {
@@ -6,7 +7,6 @@ import {
   Clock3Icon,
   CircleEllipsis,
   Heart,
-  Search,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -37,7 +37,8 @@ const AllSongs: React.FC = () => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(true);
   const [lovedIds, setLovedIds] = useState<Set<number>>(() => new Set(getLovedSongs().map((s) => Number(s.id))));
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search") || searchParams.get("query") || "";
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [totalSongs, setTotalSongs] = useState(0);
@@ -219,26 +220,20 @@ const AllSongs: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-5 bg-[#181818] p-3 rounded-xl border border-[#282828]">
-        {/* Search input */}
-        <div className="relative flex-1 max-w-md">
-          <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Tìm theo tên bài hát, nghệ sĩ..."
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="w-full pl-10 pr-4 py-2 bg-[#242424] text-white rounded-lg border border-transparent focus:border-[#1DB954] focus:outline-none placeholder-gray-500 text-sm transition"
-          />
+      {/* Page Info & Controls Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-5 bg-[#181818] px-4 py-3 rounded-xl border border-[#282828]">
+        <div className="text-xs sm:text-sm text-gray-400">
+          Hiển thị từ <strong className="text-white">{totalSongs > 0 ? startIndex : 0}</strong> - <strong className="text-white">{endIndex}</strong> trong tổng số <strong className="text-[#1DB954]">{totalSongs}</strong> bài hát
+          {searchQuery && (
+            <span className="ml-2 text-gray-400">
+              (Lọc theo: "<span className="text-white font-semibold">{searchQuery}</span>")
+            </span>
+          )}
         </div>
 
         {/* Page size selector */}
         <div className="flex items-center gap-2 text-xs text-gray-400 self-end sm:self-auto">
-          <span>Hiển thị:</span>
+          <span>Số bài mỗi trang:</span>
           <select
             value={pageSize}
             onChange={(e) => {
