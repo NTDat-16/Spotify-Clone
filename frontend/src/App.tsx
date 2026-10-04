@@ -438,18 +438,7 @@ export function App() {
                   <Route path="/viewalbum/:id" element={<ViewAlbum />} />
                   <Route path="/loved" element={<LovedSongs />} />
                   <Route path="/chat" element={<Chat />} />
-                  <Route
-                    path="/search"
-                    element={
-                      <SearchResults
-                        query={
-                          new URLSearchParams(window.location.search).get(
-                            "query"
-                          ) || ""
-                        }
-                      />
-                    }
-                  />
+                  <Route path="/search" element={<SearchResults />} />
                   <Route
                     path="/profile"
                     element={

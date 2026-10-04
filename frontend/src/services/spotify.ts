@@ -62,3 +62,20 @@ export const getSpotifyNewReleases = async (): Promise<Song[]> => {
     return [];
   }
 };
+
+export const saveExternalSong = async (song: Song): Promise<any | null> => {
+  try {
+    const res = await axios.post(`${API_BASE_URL}/external/save-song/`, {
+      name: song.name,
+      artist: song.artist,
+      album: song.album || "",
+      image_url: song.image_url || "",
+      duration: song.duration || 210,
+      premium: song.premium || 0,
+    });
+    return res.data?.song || null;
+  } catch (error) {
+    console.error("Lỗi khi lưu bài hát vào thư viện:", error);
+    return null;
+  }
+};

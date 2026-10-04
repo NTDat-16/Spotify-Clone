@@ -191,78 +191,277 @@ def search_youtube_video_id(query):
     return None
 
 
+
+def is_genuine_album(album_title, song_title):
+    """
+    Checks whether a collection is a real studio Album/EP,
+    or just a Single/standalone release that should have NO album (leave blank/null).
+    """
+    if not album_title:
+        return False
+    alb = album_title.strip().lower()
+    sng = song_title.strip().lower()
+
+    single_suffixes = [
+        " - single", "- single", "(single)", " [single]", 
+        " - ep (single)", " (deluxe single)", " - đĩa đơn", " (đĩa đơn)"
+    ]
+    for sfx in single_suffixes:
+        if alb.endswith(sfx):
+            return False
+
+    if alb == sng or alb == f"{sng} - single" or alb == "single" or alb == f"{sng} single":
+        return False
+
+    if alb.startswith(sng) and "single" in alb:
+        return False
+
+    return True
+
+
+def fetch_external_tracks(query, limit=25):
+    """
+    Searches external music catalog across Apple Music / iTunes and YouTube Innertube:
+    - High-res cover artwork (600x600 HD).
+    - If song is a single/standalone release, leaves album blank (None) as specified.
+    - Zero API key required, highly reliable worldwide search.
+    """
+    tracks = []
+    if not query or not query.strip():
+        return tracks
+
+    q = query.strip()
+
+    # 1. Try Apple Music / iTunes API (Vietnam storefront first, then global)
+    try:
+        url = "https://itunes.apple.com/search"
+        params = {
+            "term": q,
+            "entity": "song",
+            "limit": limit,
+            "country": "VN"
+        }
+        res = requests.get(url, params=params, timeout=6)
+        results = []
+        if res.status_code == 200:
+            results = res.json().get("results", [])
+        
+        if not results:
+            params_global = {"term": q, "entity": "song", "limit": limit}
+            res_global = requests.get(url, params=params_global, timeout=6)
+            if res_global.status_code == 200:
+                results = res_global.json().get("results", [])
+
+        for item in results:
+            raw_art = item.get("artworkUrl100", "")
+            if raw_art:
+                raw_art = re.sub(r'/\d+x\d+bb\.(jpg|png)', '/600x600bb.jpg', raw_art)
+                raw_art = raw_art.replace('100x100bb.jpg', '600x600bb.jpg')
+            
+            raw_collection = item.get("collectionName", "")
+            title = item.get("trackName", "Unknown Title")
+            album_name = raw_collection if is_genuine_album(raw_collection, title) else None
+            duration_sec = int(item.get("trackTimeMillis", 210000) / 1000) or 210
+
+            tracks.append({
+                "id": f"itunes_{item.get('trackId')}",
+                "name": title,
+                "artist": item.get("artistName", "Unknown Artist"),
+                "album": album_name,
+                "duration": duration_sec,
+                "image_url": raw_art or "/default-cover.png",
+                "song_url": "",
+                "premium": 0,
+                "source": "spotify",
+                "spotify_id": str(item.get("trackId")),
+                "external_url": item.get("trackViewUrl")
+            })
+    except Exception as e:
+        print(f"Error fetching from iTunes search: {e}")
+
+    # 2. If iTunes returned nothing, fallback to YouTube Innertube search
+    if not tracks:
+        try:
+            url = "https://www.youtube.com/youtubei/v1/search"
+            payload = {
+                "context": {
+                    "client": {
+                        "clientName": "WEB",
+                        "clientVersion": "2.20240101.00.00",
+                        "hl": "vi",
+                        "gl": "VN"
+                    }
+                },
+                "query": f"{q} audio"
+            }
+            headers = {
+                "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
+            res = requests.post(url, json=payload, headers=headers, timeout=6)
+            if res.status_code == 200:
+                data = res.json()
+                sections = data.get("contents", {}).get("twoColumnSearchResultsRenderer", {}).get("primaryContents", {}).get("sectionListRenderer", {}).get("contents", [])
+                for sec in sections:
+                    items = sec.get("itemSectionRenderer", {}).get("contents", [])
+                    for item in items:
+                        v = item.get("videoRenderer")
+                        if v and "videoId" in v:
+                            vid = v["videoId"]
+                            v_title = v.get("title", {}).get("runs", [{}])[0].get("text", q)
+                            v_channel = v.get("ownerText", {}).get("runs", [{}])[0].get("text", "YouTube Music")
+                            v_thumb = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
+                            tracks.append({
+                                "id": f"yt_{vid}",
+                                "name": v_title,
+                                "artist": v_channel,
+                                "album": None,
+                                "duration": 210,
+                                "image_url": v_thumb,
+                                "song_url": "",
+                                "premium": 0,
+                                "source": "spotify",
+                                "spotify_id": vid,
+                                "youtubeVideoId": vid,
+                                "external_url": f"https://www.youtube.com/watch?v={vid}"
+                            })
+                            if len(tracks) >= limit:
+                                break
+                    if len(tracks) >= limit:
+                        break
+        except Exception as e:
+            print(f"Error fetching from YouTube fallback: {e}")
+
+    return tracks
+
+
 @api_view(['GET'])
 def spotify_search(request):
     """
-    Searches tracks on Spotify Web API.
-    Returns normalized track metadata with high-res cover art.
+    Searches tracks on Spotify Web API if configured,
+    or smoothly falls back to Apple Music / iTunes & YouTube Innertube.
+    Guarantees rich results for ANY song search query!
     """
     query = request.GET.get('q', '').strip()
     if not query:
         return Response({'tracks': []})
 
     token = get_spotify_access_token()
-    if not token:
-        # Fallback if no Spotify keys are provided:
-        # Search local songs and return formatted
-        from .models import Song
-        from django.db.models import Q
-        songs = Song.objects.filter(
-            Q(name__icontains=query) | Q(artist__name__icontains=query)
-        )[:15]
-        tracks = []
-        for s in songs:
-            tracks.append({
-                "id": f"local_{s.id}",
-                "name": s.name,
-                "artist": s.artist.name if s.artist else "Unknown Artist",
-                "album": s.album.name if s.album else None,
-                "duration": s.duration,
-                "image_url": _format_cover_image(s.album.cover_image if s.album else None),
-                "song_url": s.song_url,
-                "premium": s.premium,
-                "source": "local",
-                "spotify_id": None
-            })
-        return Response({
-            "tracks": tracks,
-            "message": "Spotify API credentials not configured. Displaying local matches."
-        })
+    if token:
+        try:
+            search_url = "https://api.spotify.com/v1/search"
+            headers = {"Authorization": f"Bearer {token}"}
+            params = {"q": query, "type": "track", "limit": 20}
+            res = requests.get(search_url, headers=headers, params=params, timeout=8)
+
+            if res.status_code == 200:
+                data = res.json()
+                items = data.get("tracks", {}).get("items", [])
+                if items:
+                    tracks = []
+                    for item in items:
+                        images = item.get("album", {}).get("images", [])
+                        image_url = images[0]["url"] if images else "/default-cover.png"
+                        artists = ", ".join([a["name"] for a in item.get("artists", [])])
+                        duration_sec = int(item.get("duration_ms", 0) / 1000)
+                        raw_album = item.get("album", {}).get("name")
+                        album_name = raw_album if is_genuine_album(raw_album, item.get("name", "")) else None
+
+                        tracks.append({
+                            "id": f"sp_{item['id']}",
+                            "name": item.get("name", "Unknown Title"),
+                            "artist": artists,
+                            "album": album_name,
+                            "duration": duration_sec or 210,
+                            "image_url": image_url,
+                            "song_url": "", # Handled via YouTube IFrame stream
+                            "premium": 0,
+                            "source": "spotify",
+                            "spotify_id": item.get("id"),
+                            "external_url": item.get("external_urls", {}).get("spotify")
+                        })
+                    return Response({"tracks": tracks, "source": "spotify"})
+        except Exception as e:
+            print(f"Spotify search error: {e}")
+
+    # Fallback to Apple Music / iTunes and YouTube
+    external_tracks = fetch_external_tracks(query, limit=25)
+    return Response({
+        "tracks": external_tracks,
+        "source": "cloud_api",
+        "message": "Fetched from Cloud Music API"
+    })
+
+
+@api_view(['POST'])
+def save_external_song(request):
+    """
+    Saves an external song to the local database on-demand so it becomes part of the permanent catalog.
+    """
+    name = request.data.get('name', '').strip()
+    artist_name = request.data.get('artist', '').strip()
+    raw_album = request.data.get('album', '')
+    image_url = request.data.get('image_url', '')
+    duration = request.data.get('duration', 210)
+    premium = request.data.get('premium', 0)
+
+    if not name:
+        return Response({'error': 'Tên bài hát là bắt buộc'}, status=status.HTTP_400_BAD_REQUEST)
+
+    artist_name = artist_name or "Various Artists"
+    from .models import Song, Artist, Album
+    from .serializers import SongSerializer
+    import random
 
     try:
-        search_url = "https://api.spotify.com/v1/search"
-        headers = {"Authorization": f"Bearer {token}"}
-        params = {"q": query, "type": "track", "limit": 20}
-        res = requests.get(search_url, headers=headers, params=params, timeout=8)
+        artist_obj, _ = Artist.objects.get_or_create(
+            name__iexact=artist_name,
+            defaults={'name': artist_name, 'status': 1}
+        )
 
-        if res.status_code == 200:
-            data = res.json()
-            items = data.get("tracks", {}).get("items", [])
-            tracks = []
-            for item in items:
-                images = item.get("album", {}).get("images", [])
-                image_url = images[0]["url"] if images else "/default-cover.png"
-                artists = ", ".join([a["name"] for a in item.get("artists", [])])
-                duration_sec = int(item.get("duration_ms", 0) / 1000)
+        album_obj = None
+        if raw_album and is_genuine_album(raw_album, name):
+            clean_album_name = str(raw_album)[:250].strip()
+            album_obj, _ = Album.objects.get_or_create(
+                name__iexact=clean_album_name,
+                artist=artist_obj,
+                defaults={
+                    'name': clean_album_name,
+                    'artist': artist_obj,
+                    'cover_image': image_url or 'default-album.jpg',
+                    'status': 1
+                }
+            )
 
-                tracks.append({
-                    "id": f"sp_{item['id']}",
-                    "name": item.get("name", "Unknown Title"),
-                    "artist": artists,
-                    "album": item.get("album", {}).get("name"),
-                    "duration": duration_sec or 210,
-                    "image_url": image_url,
-                    "song_url": "", # Will stream via YouTube IFrame API
-                    "premium": 0,
-                    "source": "spotify",
-                    "spotify_id": item.get("id"),
-                    "external_url": item.get("external_urls", {}).get("spotify")
-                })
-            return Response({"tracks": tracks})
+        # Check if already in Song table
+        song_obj = Song.objects.filter(name__iexact=name, artist=artist_obj).first()
+        if not song_obj:
+            song_obj = Song.objects.create(
+                name=name,
+                artist=artist_obj,
+                album=album_obj,
+                cover_image=image_url or '/default-cover.png',
+                duration=duration,
+                song_url='',
+                status=1,
+                premium=premium,
+                play_count=random.randint(1000, 50000)
+            )
         else:
-            return Response({"error": "Spotify API error", "details": res.text}, status=res.status_code)
+            updated = []
+            if image_url and (not getattr(song_obj, 'cover_image', None) or song_obj.cover_image == '/default-cover.png'):
+                song_obj.cover_image = image_url
+                updated.append('cover_image')
+            if updated:
+                song_obj.save(update_fields=updated)
+
+        serializer = SongSerializer(song_obj)
+        return Response({
+            'message': 'Đã lưu bài hát vào thư viện thành công!',
+            'song': serializer.data
+        }, status=status.HTTP_201_CREATED)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['GET'])
@@ -346,33 +545,6 @@ def youtube_search_video(request):
         })
     else:
         return Response({'error': 'Không tìm thấy video phù hợp trên YouTube'}, status=status.HTTP_404_NOT_FOUND)
-
-
-def is_genuine_album(album_title, song_title):
-    """
-    Checks whether a collection is a real studio Album/EP,
-    or just a Single/standalone release that should have NO album (leave blank/null).
-    """
-    if not album_title:
-        return False
-    alb = album_title.strip().lower()
-    sng = song_title.strip().lower()
-
-    single_suffixes = [
-        " - single", "- single", "(single)", " [single]", 
-        " - ep (single)", " (deluxe single)", " - đĩa đơn", " (đĩa đơn)"
-    ]
-    for sfx in single_suffixes:
-        if alb.endswith(sfx):
-            return False
-
-    if alb == sng or alb == f"{sng} - single" or alb == "single" or alb == f"{sng} single":
-        return False
-
-    if alb.startswith(sng) and "single" in alb:
-        return False
-
-    return True
 
 
 def _save_tracks_to_db(items, is_rss=False, is_trending=False, base_play_count=980000):

@@ -1,21 +1,46 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import { API_ORIGIN } from "../config/api";
 import axios from "axios";
-import { Clock3Icon, Play, Tv, Heart } from "lucide-react";
+import {
+  Clock3Icon,
+  Play,
+  Tv,
+  Heart,
+  BookmarkPlus,
+  Check,
+  Cloud,
+  Sparkles,
+  Music,
+  AlertCircle,
+} from "lucide-react";
 import { useAudio, isPremiumSong, isUserPremiumAccount, Song } from "../AudioContext";
-import { searchSpotifyTracks } from "../services/spotify";
+import { searchSpotifyTracks, saveExternalSong } from "../services/spotify";
 import { isSongLoved, toggleLovedSong } from "../services/favorites";
+import { getImageUrl, formatDuration } from "../utils/media";
 import { debounce } from "lodash";
 
 type SearchTab = "all" | "spotify" | "local";
 
-const SearchResults: React.FC<{ query: string }> = ({ query }) => {
+interface SearchResultsProps {
+  query?: string;
+}
+
+const SearchResults: React.FC<SearchResultsProps> = ({ query: propQuery }) => {
+  const [searchParams] = useSearchParams();
+  const urlQuery = searchParams.get("query") || "";
+  const query = (propQuery !== undefined ? propQuery : urlQuery).trim();
+
   const [localSongs, setLocalSongs] = useState<Song[]>([]);
   const [spotifySongs, setSpotifySongs] = useState<Song[]>([]);
   const [activeTab, setActiveTab] = useState<SearchTab>("all");
   const [loading, setLoading] = useState(false);
+  const [searchStep, setSearchStep] = useState<"idle" | "searching_local" | "searching_cloud" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
   const [lovedIds, setLovedIds] = useState<Set<string>>(() => new Set());
+  const [savedIds, setSavedIds] = useState<Set<string>>(() => new Set());
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const { handlePlaySong, setSongList } = useAudio();
 
@@ -38,7 +63,16 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
     return () => window.removeEventListener("loved-songs-updated", handleUpdate);
   }, []);
 
-  // Tìm kiếm kết hợp Local + Spotify Web API có debounce
+  // Tự ẩn thông báo toast sau 3.5s
+  useEffect(() => {
+    if (!toastMsg) return;
+    const timer = setTimeout(() => setToastMsg(null), 3500);
+    return () => clearTimeout(timer);
+  }, [toastMsg]);
+
+  // Luồng tìm kiếm bài hát thông minh:
+  // 1. Tìm trong thư viện cục bộ trước
+  // 2. Nếu không có sẵn -> tự động gọi API tìm kiếm trực tuyến (Cloud Music)
   const fetchSearchResults = useCallback(
     debounce(async (searchQuery: string) => {
       const q = searchQuery.trim();
@@ -46,50 +80,63 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
         setLocalSongs([]);
         setSpotifySongs([]);
         setLoading(false);
+        setSearchStep("idle");
         return;
       }
 
       setLoading(true);
       setError(null);
+      setSearchStep("searching_local");
 
       try {
-        // Chạy song song cả tìm kiếm nội bộ và Spotify API
-        const [localRes, spotifyRes] = await Promise.allSettled([
-          axios.get(`${API_ORIGIN}/api/songs/`, { params: { search: q } }),
-          searchSpotifyTracks(q),
-        ]);
-
-        let localData: Song[] = [];
-        if (localRes.status === "fulfilled" && Array.isArray(localRes.value.data)) {
-          localData = localRes.value.data.map((song: any) => ({
-            id: song.id,
-            name: song.name,
-            artist: song.artist_name || "Nghệ sĩ",
-            album: song.album_name || null,
-            duration: song.duration || 180,
-            song_url: song.song_url || "",
-            image_url: song.album_img
-              ? `/uploads/albums/${song.album_img}`
-              : "/default-cover.png",
-            premium: song.premium ?? 0,
-            source: "local" as const,
-          }));
-        }
-
-        let spData: Song[] = [];
-        if (spotifyRes.status === "fulfilled" && Array.isArray(spotifyRes.value)) {
-          spData = spotifyRes.value;
-        }
+        // Bước 1: Tìm trong database nội bộ trước
+        const localRes = await axios.get(`${API_ORIGIN}/api/songs/`, { params: { search: q } });
+        const raw = localRes.data;
+        const list = Array.isArray(raw) ? raw : (raw?.results || []);
+        const localData: Song[] = list.map((song: any) => ({
+          id: song.id,
+          name: song.name,
+          artist: song.artist_name || song.artist?.name || "Nghệ sĩ",
+          album: song.album_name || song.album?.name || null,
+          duration: song.duration || 180,
+          song_url: song.song_url || "",
+          image_url: getImageUrl(song.image_url || song.album_img),
+          premium: song.premium ?? 0,
+          source: "local" as const,
+        }));
 
         setLocalSongs(localData);
-        setSpotifySongs(spData);
+
+        // Bước 2: Kiểm tra kết quả
+        if (localData.length === 0) {
+          // Không có trong thư viện nội bộ -> Tự động gọi API tìm kiếm trực tuyến
+          setSearchStep("searching_cloud");
+          const cloudTracks = await searchSpotifyTracks(q);
+          setSpotifySongs(cloudTracks);
+          setActiveTab("spotify");
+        } else {
+          // Đã có trong thư viện -> Tải thêm kết quả trực tuyến trong nền để người dùng có nhiều lựa chọn
+          searchSpotifyTracks(q).then((cloudTracks) => {
+            setSpotifySongs(cloudTracks);
+          });
+          setActiveTab("all");
+        }
       } catch (err) {
-        setError("Không thể tải kết quả tìm kiếm.");
-        console.error("Lỗi khi lấy kết quả tìm kiếm:", err);
+        console.error("Lỗi khi tìm kiếm bài hát:", err);
+        // Nếu API nội bộ lỗi, fallback ngay sang API trực tuyến
+        try {
+          setSearchStep("searching_cloud");
+          const cloudTracks = await searchSpotifyTracks(q);
+          setSpotifySongs(cloudTracks);
+          setActiveTab("spotify");
+        } catch {
+          setError("Không thể tải kết quả tìm kiếm. Vui lòng kiểm tra kết nối mạng.");
+        }
       } finally {
         setLoading(false);
+        setSearchStep("done");
       }
-    }, 350),
+    }, 300),
     []
   );
 
@@ -100,10 +147,42 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
     };
   }, [query, fetchSearchResults]);
 
-  const formatDuration = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  // Lưu bài hát trực tuyến vào thư viện nội bộ
+  const handleSaveToLibrary = async (song: Song, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const idStr = String(song.id);
+    if (savedIds.has(idStr)) return;
+
+    setSavingId(idStr);
+    try {
+      const savedSong = await saveExternalSong(song);
+      if (savedSong) {
+        setSavedIds((prev) => new Set([...prev, idStr]));
+        // Thêm vào danh sách local
+        setLocalSongs((prev) => [
+          {
+            id: savedSong.id,
+            name: savedSong.name,
+            artist: savedSong.artist_name || song.artist,
+            album: savedSong.album_name || song.album,
+            duration: savedSong.duration || song.duration,
+            song_url: savedSong.song_url || "",
+            image_url: getImageUrl(savedSong.image_url || song.image_url),
+            premium: savedSong.premium || 0,
+            source: "local" as const,
+          },
+          ...prev,
+        ]);
+        setToastMsg(`Đã lưu "${song.name}" vào thư viện thành công!`);
+      } else {
+        setToastMsg(`Không thể lưu "${song.name}". Vui lòng thử lại.`);
+      }
+    } catch (err) {
+      console.error("Lỗi lưu bài hát:", err);
+      setToastMsg(`Lỗi khi lưu bài hát.`);
+    } finally {
+      setSavingId(null);
+    }
   };
 
   const displayedSongs =
@@ -111,85 +190,127 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
       ? spotifySongs
       : activeTab === "local"
       ? localSongs
-      : [...spotifySongs, ...localSongs];
+      : [...localSongs, ...spotifySongs];
 
   const handlePlay = (song: Song, forceMv: boolean = false) => {
     if (isPremiumSong(song) && !isUserPremiumAccount()) {
       alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức.");
       return;
     }
-    // Cập nhật danh sách bài hát cho hàng chờ
     setSongList(displayedSongs);
     handlePlaySong(song, forceMv);
   };
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
+      {/* Toast thông báo lưu bài hát */}
+      {toastMsg && (
+        <div className="fixed bottom-24 right-6 z-50 bg-[#1DB954] text-black px-4 py-2.5 rounded-xl font-bold shadow-2xl flex items-center gap-2 animate-bounce">
+          <Check size={18} />
+          <span>{toastMsg}</span>
+        </div>
+      )}
+
       {/* Tiêu đề & Thanh chuyển Tab */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#282828] pb-4">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
-            Kết quả tìm kiếm cho "{query}"
+          <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+            <span>Kết quả cho "{query}"</span>
+            {searchStep === "searching_cloud" && (
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1.5 animate-pulse">
+                <Cloud size={14} />
+                Đang gọi Cloud Music API...
+              </span>
+            )}
           </h1>
           <p className="text-sm text-gray-400 mt-1">
-            Tổng cộng: {displayedSongs.length} kết quả
+            Tổng cộng: {displayedSongs.length} bài hát ({localSongs.length} trong thư viện, {spotifySongs.length} trực tuyến)
           </p>
         </div>
 
         {/* Bộ lọc Tabs */}
-        <div className="flex items-center gap-2 bg-[#181818] p-1 rounded-full border border-[#282828]">
+        <div className="flex items-center gap-2 bg-[#181818] p-1 rounded-full border border-[#282828] self-start md:self-auto">
           <button
             onClick={() => setActiveTab("all")}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
               activeTab === "all"
-                ? "bg-white text-black"
+                ? "bg-white text-black shadow font-bold"
                 : "text-gray-400 hover:text-white"
             }`}
           >
-            Tất cả ({spotifySongs.length + localSongs.length})
+            Tất cả ({localSongs.length + spotifySongs.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("local")}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition ${
+              activeTab === "local"
+                ? "bg-white text-black shadow font-bold"
+                : "text-gray-400 hover:text-white"
+            }`}
+          >
+            <Music size={13} />
+            Thư viện ({localSongs.length})
           </button>
           <button
             onClick={() => setActiveTab("spotify")}
             className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition ${
               activeTab === "spotify"
-                ? "bg-[#1DB954] text-black font-bold"
+                ? "bg-[#1DB954] text-black font-bold shadow"
                 : "text-gray-400 hover:text-white"
             }`}
           >
-            <span className="w-2 h-2 rounded-full bg-green-900" />
-            Spotify Catalog ({spotifySongs.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("local")}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
-              activeTab === "local"
-                ? "bg-white text-black"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            Thư viện ({localSongs.length})
+            <Cloud size={13} />
+            Trực tuyến Cloud ({spotifySongs.length})
           </button>
         </div>
       </div>
 
-      {loading && (
-        <div className="p-12 text-center text-gray-400 flex items-center justify-center gap-3">
-          <div className="w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
-          <span>Đang tìm kiếm bài hát từ Spotify và thư viện...</span>
+      {/* Thông báo thông minh khi tự động tìm trực tuyến vì thư viện nội bộ chưa có */}
+      {!loading && localSongs.length === 0 && spotifySongs.length > 0 && query.trim() !== "" && (
+        <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-950/60 via-[#181818] to-blue-950/40 border border-emerald-500/30 flex items-start gap-3.5 shadow-lg">
+          <Sparkles className="text-[#1DB954] mt-0.5 flex-shrink-0" size={20} />
+          <div className="text-sm">
+            <span className="font-bold text-white block">
+              Tự động tìm kiếm qua Cloud Music API (Apple Music & Spotify)
+            </span>
+            <p className="text-gray-300 mt-0.5">
+              Bài hát chưa có trong thư viện nội bộ. Hệ thống đã tự động kết nối API trực tuyến và tìm thấy <strong className="text-[#1DB954]">{spotifySongs.length}</strong> bài hát. Bạn có thể nhấn để nghe ngay hoặc bấm biểu tượng <strong className="text-white">+ Lưu</strong> để thêm vào thư viện vĩnh viễn!
+            </p>
+          </div>
         </div>
       )}
 
-      {error && <div className="p-6 text-red-500 bg-red-950/30 rounded-lg">{error}</div>}
+      {/* Loading state */}
+      {loading && (
+        <div className="p-12 text-center text-gray-400 flex flex-col items-center justify-center gap-3">
+          <div className="w-6 h-6 border-2 border-[#1DB954] border-t-transparent rounded-full animate-spin" />
+          <span className="text-sm">
+            {searchStep === "searching_cloud"
+              ? "Chưa có trong thư viện nội bộ. Đang tự động tìm kiếm trên Music Cloud API..."
+              : "Đang tìm kiếm bài hát..."}
+          </span>
+        </div>
+      )}
 
+      {error && (
+        <div className="p-4 text-red-400 bg-red-950/30 border border-red-800/40 rounded-xl flex items-center gap-2">
+          <AlertCircle size={18} />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Empty state */}
       {!loading && displayedSongs.length === 0 && query.trim() !== "" && (
-        <div className="text-center py-16 bg-[#181818] rounded-xl text-gray-400">
-          <p className="text-lg">Không tìm thấy bài hát nào cho từ khóa "{query}".</p>
-          <p className="text-sm text-gray-500 mt-2">
-            Hãy thử tìm bằng tên bài hát, nghệ sĩ hoặc bài hit quốc tế trên Spotify.
+        <div className="text-center py-16 bg-[#181818] rounded-2xl border border-[#282828] text-gray-400 max-w-xl mx-auto">
+          <Music size={40} className="mx-auto mb-3 text-gray-600" />
+          <p className="text-lg font-semibold text-white">Không tìm thấy bài hát nào cho "{query}"</p>
+          <p className="text-sm text-gray-500 mt-1 px-4">
+            Hãy thử tìm bằng tên bài hát, nghệ sĩ (ví dụ: Sơn Tùng, Vũ, Taylor Swift, Bruno Mars...).
           </p>
         </div>
       )}
 
+      {/* Danh sách kết quả bài hát */}
       {!loading && displayedSongs.length > 0 && (
         <div className="bg-[#181818] rounded-xl overflow-hidden border border-[#282828] shadow-lg">
           <table className="w-full">
@@ -204,8 +325,8 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
                 <th className="px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
                   Album / Nguồn
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center w-24">
-                  Chế độ
+                <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center w-36">
+                  Thao tác
                 </th>
                 <th className="px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right w-24">
                   <div className="flex items-center justify-end gap-1">
@@ -218,11 +339,13 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
               {displayedSongs.map((song, index) => {
                 const isPremium = isPremiumSong(song);
                 const isLoved = lovedIds.has(String(song.id));
-                const isSpotify = song.source === "spotify";
+                const isExternal = song.source === "spotify" || song.source === "youtube";
+                const isSaved = savedIds.has(String(song.id));
+                const isBeingSaved = savingId === String(song.id);
 
                 return (
                   <tr
-                    key={song.id}
+                    key={`${song.source || 'song'}_${song.id}_${index}`}
                     className="group hover:bg-[#282828] transition-colors cursor-pointer select-none"
                     onClick={() => handlePlay(song, false)}
                   >
@@ -244,24 +367,28 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-3">
                         <img
-                          src={song.image_url || "/default-cover.png"}
+                          src={getImageUrl(song.image_url)}
                           alt={song.name}
-                          className="h-11 w-11 rounded-md object-cover flex-shrink-0 shadow"
+                          className="h-11 w-11 rounded-md object-cover flex-shrink-0 shadow bg-[#222]"
                           onError={(e) => {
                             e.currentTarget.src = "/default-cover.png";
                           }}
                         />
                         <div className="min-w-0">
                           <div className="text-sm font-semibold text-white group-hover:text-[#1DB954] transition truncate flex items-center gap-2">
-                            {song.name}
-                            {isSpotify && (
+                            <span>{song.name}</span>
+                            {isExternal ? (
                               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#1DB954] text-black">
-                                Spotify
+                                Cloud Music
+                              </span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-700 text-gray-200">
+                                Thư viện
                               </span>
                             )}
                             {isPremium && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-600 text-white">
-                                Premium
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-black">
+                                VIP
                               </span>
                             )}
                           </div>
@@ -275,23 +402,48 @@ const SearchResults: React.FC<{ query: string }> = ({ query }) => {
                     {/* Album / Source */}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400 hidden md:table-cell">
                       <span className="truncate max-w-[200px] block" title={song.album || ""}>
-                        {song.album || (isSpotify ? "Spotify Release" : "Single")}
+                        {song.album || (isExternal ? "Đĩa đơn trực tuyến" : "Đĩa đơn")}
                       </span>
                     </td>
 
-                    {/* Quick MV / Action button */}
+                    {/* Actions: Save to library, MV, Love */}
                     <td className="px-4 py-4 whitespace-nowrap text-center">
-                      <div className="flex items-center justify-center gap-2">
+                      <div className="flex items-center justify-center gap-1.5">
+                        {/* Nút lưu vào thư viện (cho bài trực tuyến) */}
+                        {isExternal && (
+                          <button
+                            onClick={(e) => handleSaveToLibrary(song, e)}
+                            disabled={isSaved || isBeingSaved}
+                            title={isSaved ? "Đã lưu vào thư viện" : "Lưu vào thư viện bài hát"}
+                            className={`p-1.5 rounded-lg transition ${
+                              isSaved
+                                ? "text-[#1DB954] bg-[#1DB954]/10 cursor-default"
+                                : "text-gray-400 hover:text-white hover:bg-[#333]"
+                            }`}
+                          >
+                            {isBeingSaved ? (
+                              <div className="w-4 h-4 border-2 border-[#1DB954] border-t-transparent rounded-full animate-spin" />
+                            ) : isSaved ? (
+                              <Check size={16} />
+                            ) : (
+                              <BookmarkPlus size={16} />
+                            )}
+                          </button>
+                        )}
+
+                        {/* Nút xem MV / Video YouTube */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handlePlay(song, true);
                           }}
-                          title="Xem MV / Video (YouTube)"
+                          title="Xem MV / Video YouTube"
                           className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-[#333] transition"
                         >
                           <Tv size={16} />
                         </button>
+
+                        {/* Nút yêu thích */}
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
