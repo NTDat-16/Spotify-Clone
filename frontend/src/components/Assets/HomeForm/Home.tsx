@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_ORIGIN } from "../../../config/api";
-import { PlayIcon, CircleEllipsis, Heart, Tv, Sparkles, Flame, Disc, Radio, DownloadCloud } from "lucide-react";
+import { PlayIcon, CircleEllipsis, Heart, Tv, Sparkles, Flame, Disc, Radio, DownloadCloud, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAudio, isPremiumSong, isUserPremiumAccount, Song } from "../../../AudioContext";
 import { useNavigate } from "react-router-dom";
 import { getLovedSongs, toggleLovedSong } from "../../../services/favorites";
@@ -18,6 +18,8 @@ interface Album {
 const Home: React.FC = () => {
   const { handlePlaySong, setSongList } = useAudio();
   const [topSongs, setTopSongs] = useState<Song[]>([]);
+  const [chartPage, setChartPage] = useState<number>(1);
+  const CHART_PAGE_SIZE = 10;
   const [spotifyReleases, setSpotifyReleases] = useState<Song[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,15 +35,16 @@ const Home: React.FC = () => {
       const response = await fetch(`${API_ORIGIN}/api/songs/?ordering=-play_count`);
       if (!response.ok) throw new Error("Không thể tải bảng xếp hạng.");
       const data = await response.json();
+      const list = Array.isArray(data) ? data : (data.results || []);
 
-      const mappedSongs: Song[] = data.map((song: any) => ({
+      const mappedSongs: Song[] = list.map((song: any) => ({
         id: song.id,
         name: song.name || "Unknown Song",
-        artist: song.artist_name || "Unknown Artist",
+        artist: song.artist_name || (typeof song.artist === "string" ? song.artist : "Unknown Artist"),
         album: song.album_name || null,
         duration: song.duration || 180,
         song_url: song.song_url || "",
-        image_url: getImageUrl(song.album_img),
+        image_url: getImageUrl(song.image_url || song.album_img || song.cover_image),
         premium: song.premium || 0,
         source: (song.song_url ? "local" : "spotify") as any,
       }));
@@ -414,7 +417,7 @@ const Home: React.FC = () => {
 
       {/* 5. Bảng xếp hạng âm nhạc 2024 - 2026 */}
       <section className="pt-2">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
             <div className="flex items-center gap-2">
               <Flame size={20} className="text-amber-500" />
@@ -426,6 +429,12 @@ const Home: React.FC = () => {
               Top các ca khúc được nghe nhiều nhất và hỗ trợ stream trực tuyến
             </p>
           </div>
+          <button
+            onClick={() => navigate("/all_songs")}
+            className="text-xs font-bold text-[#1DB954] hover:underline self-start sm:self-auto"
+          >
+            Xem tất cả {topSongs.length > 0 ? `(${topSongs.length} bài hát)` : ""} →
+          </button>
         </div>
         <div className="bg-[#181818] rounded-xl overflow-hidden border border-[#282828] shadow-xl">
           {isLoading ? (
@@ -433,110 +442,170 @@ const Home: React.FC = () => {
           ) : topSongs.length === 0 ? (
             <p className="p-8 text-center text-gray-400">Không có bài hát nào trong bảng xếp hạng.</p>
           ) : (
-            <div className="divide-y divide-[#282828]/60">
-              {topSongs.slice(0, 15).map((song, index) => {
-                const songIsPremium = isPremiumSong(song);
-                const isLoved = lovedIds.has(String(song.id));
-                return (
-                  <div
-                    key={song.id}
-                    className="flex items-center p-3.5 hover:bg-[#282828] transition-all cursor-pointer group"
-                    onClick={() => {
-                      if (songIsPremium && !isUserPremiumAccount()) {
-                        alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức.");
-                        return;
-                      }
-                      setSongList(topSongs);
-                      handlePlaySong(song, false);
-                    }}
-                  >
-                    <span
-                      className={`w-10 text-center text-sm font-bold ${
-                        index === 0
-                          ? "text-yellow-400 text-base"
-                          : index === 1
-                          ? "text-gray-300 text-base"
-                          : index === 2
-                          ? "text-amber-600 text-base"
-                          : "text-gray-500"
-                      }`}
-                    >
-                      #{index + 1}
-                    </span>
-                    <div className="flex items-center flex-1 min-w-0 pr-4">
-                      <div className="relative group/cover flex-shrink-0 w-11 h-11 mr-3 rounded-md overflow-hidden shadow">
-                        <img
-                          src={song.image_url}
-                          alt={song.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.currentTarget.src = "/default-cover.png";
-                          }}
-                        />
-                        <button className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <PlayIcon size={18} className="text-[#1DB954] fill-current" />
-                        </button>
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-semibold text-sm truncate text-white group-hover:text-[#1DB954] transition">
-                            {song.name}
-                          </h3>
-                          {songIsPremium && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
-                              Premium
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-400 truncate mt-0.5">{song.artist}</p>
-                      </div>
-                    </div>
-
-                    <div className="w-24 text-xs text-gray-400 text-center hidden sm:block">
-                      {song.album || "Single"}
-                    </div>
-
-                    <div className="w-16 text-xs text-gray-400 text-right tabular-nums pr-4">
-                      {formatDuration(song.duration)}
-                    </div>
-
-                    <div className="flex items-center justify-end gap-1 flex-shrink-0">
-                      <button
-                        className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-[#333] transition"
-                        title="Xem MV (YouTube)"
-                        onClick={(e) => {
-                          e.stopPropagation();
+            <>
+              <div className="divide-y divide-[#282828]/60">
+                {topSongs
+                  .slice((chartPage - 1) * CHART_PAGE_SIZE, chartPage * CHART_PAGE_SIZE)
+                  .map((song, index) => {
+                    const songIsPremium = isPremiumSong(song);
+                    const isLoved = lovedIds.has(String(song.id));
+                    const rank = (chartPage - 1) * CHART_PAGE_SIZE + index + 1;
+                    return (
+                      <div
+                        key={song.id}
+                        className="flex items-center p-3.5 hover:bg-[#282828] transition-all cursor-pointer group"
+                        onClick={() => {
+                          if (songIsPremium && !isUserPremiumAccount()) {
+                            alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức.");
+                            return;
+                          }
                           setSongList(topSongs);
-                          handlePlaySong(song, true);
+                          handlePlaySong(song, false);
                         }}
                       >
-                        <Tv size={16} />
-                      </button>
-                      <button
-                        className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-[#333] transition"
-                        title={isLoved ? "Xóa khỏi yêu thích" : "Yêu thích"}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleLovedSong(song as any);
-                        }}
-                      >
-                        <Heart
-                          size={16}
-                          className={isLoved ? "fill-[#1DB954] text-[#1DB954]" : "text-gray-400"}
-                        />
-                      </button>
-                      <button
-                        className="text-gray-400 hover:text-gray-200 p-2 rounded-lg hover:bg-[#333] transition"
-                        title="Tải về"
-                        onClick={(e) => handleDownload(e, song)}
-                      >
-                        <CircleEllipsis size={18} />
-                      </button>
-                    </div>
+                        <span
+                          className={`w-10 text-center text-sm font-bold ${
+                            rank === 1
+                              ? "text-yellow-400 text-base"
+                              : rank === 2
+                              ? "text-gray-300 text-base"
+                              : rank === 3
+                              ? "text-amber-600 text-base"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          #{rank}
+                        </span>
+                        <div className="flex items-center flex-1 min-w-0 pr-4">
+                          <div className="relative group/cover flex-shrink-0 w-11 h-11 mr-3 rounded-md overflow-hidden shadow bg-[#222]">
+                            <img
+                              src={song.image_url}
+                              alt={song.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
+                              onError={(e) => {
+                                e.currentTarget.src = "/default-cover.png";
+                              }}
+                            />
+                            <button className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <PlayIcon size={18} className="text-[#1DB954] fill-current" />
+                            </button>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-sm truncate text-white group-hover:text-[#1DB954] transition">
+                                {song.name}
+                              </h3>
+                              {songIsPremium && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
+                                  Premium
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-400 truncate mt-0.5">{song.artist}</p>
+                          </div>
+                        </div>
+
+                        <div className="w-24 text-xs text-gray-400 text-center hidden sm:block">
+                          {song.album || "Single"}
+                        </div>
+
+                        <div className="w-16 text-xs text-gray-400 text-right tabular-nums pr-4">
+                          {formatDuration(song.duration)}
+                        </div>
+
+                        <div className="flex items-center justify-end gap-1 flex-shrink-0">
+                          <button
+                            className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-[#333] transition"
+                            title="Xem MV (YouTube)"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSongList(topSongs);
+                              handlePlaySong(song, true);
+                            }}
+                          >
+                            <Tv size={16} />
+                          </button>
+                          <button
+                            className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-[#333] transition"
+                            title={isLoved ? "Xóa khỏi yêu thích" : "Yêu thích"}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleLovedSong(song as any);
+                            }}
+                          >
+                            <Heart
+                              size={16}
+                              className={isLoved ? "fill-[#1DB954] text-[#1DB954]" : "text-gray-400"}
+                            />
+                          </button>
+                          <button
+                            className="text-gray-400 hover:text-gray-200 p-2 rounded-lg hover:bg-[#333] transition"
+                            title="Tải về"
+                            onClick={(e) => handleDownload(e, song)}
+                          >
+                            <CircleEllipsis size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+
+              {/* Phân trang Section 5 */}
+              {topSongs.length > CHART_PAGE_SIZE && (
+                <div className="flex items-center justify-between px-5 py-3 bg-[#1f1f1f] border-t border-[#282828] text-xs text-gray-400">
+                  <span>
+                    Trang <span className="text-white font-bold">{chartPage}</span> /{" "}
+                    <span className="text-white font-bold">{Math.ceil(topSongs.length / CHART_PAGE_SIZE)}</span> ({topSongs.length} bài hát)
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setChartPage((p) => Math.max(1, p - 1))}
+                      disabled={chartPage === 1}
+                      title="Trang trước"
+                      className="p-1.5 rounded-lg border border-[#333] hover:bg-[#282828] hover:text-white disabled:opacity-30 disabled:pointer-events-none transition"
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    {Array.from(
+                      { length: Math.min(5, Math.ceil(topSongs.length / CHART_PAGE_SIZE)) },
+                      (_, i) => {
+                        const maxP = Math.ceil(topSongs.length / CHART_PAGE_SIZE);
+                        let p = i + 1;
+                        if (chartPage > 3 && maxP > 5) {
+                          p = Math.min(chartPage - 2 + i, maxP - (4 - i));
+                        }
+                        return (
+                          <button
+                            key={p}
+                            onClick={() => setChartPage(p)}
+                            className={`min-w-[28px] h-7 px-1.5 rounded-md font-bold text-xs transition ${
+                              chartPage === p
+                                ? "bg-[#1DB954] text-black shadow"
+                                : "border border-[#333] hover:bg-[#282828] text-gray-300"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        );
+                      }
+                    )}
+                    <button
+                      onClick={() =>
+                        setChartPage((p) =>
+                          Math.min(Math.ceil(topSongs.length / CHART_PAGE_SIZE), p + 1)
+                        )
+                      }
+                      disabled={chartPage === Math.ceil(topSongs.length / CHART_PAGE_SIZE)}
+                      title="Trang sau"
+                      className="p-1.5 rounded-lg border border-[#333] hover:bg-[#282828] hover:text-white disabled:opacity-30 disabled:pointer-events-none transition"
+                    >
+                      <ChevronRight size={16} />
+                    </button>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

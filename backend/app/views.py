@@ -16,16 +16,54 @@ from .serializers import (
     MessageSerializer,
 )
 
-# Lấy danh sách tất cả bài hát
+# Lấy danh sách bài hát (Hỗ trợ phân trang, tìm kiếm & sắp xếp)
 @api_view(['GET'])
 def get_songs(request):
     search_query = request.GET.get('search', '').strip()
-    songs = Song.objects.all()
+    ordering = request.GET.get('ordering', '').strip()
+    page = request.GET.get('page')
+    page_size_param = request.GET.get('page_size')
+
+    songs = Song.objects.select_related('artist', 'album').all()
     if search_query:
         songs = songs.filter(
             Q(name__icontains=search_query) |
-            Q(artist__name__icontains=search_query)
+            Q(artist__name__icontains=search_query) |
+            Q(album__name__icontains=search_query)
         )
+    if ordering:
+        allowed_ordering = ['play_count', '-play_count', 'id', '-id', 'name', '-name', 'created_at', '-created_at']
+        if ordering in allowed_ordering:
+            songs = songs.order_by(ordering)
+    else:
+        songs = songs.order_by('-play_count', 'id')
+
+    # Nếu có tham số page, hỗ trợ phân trang chuẩn:
+    if page is not None:
+        from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+        try:
+            page_size = int(page_size_param) if page_size_param else 20
+            page_size = max(1, min(page_size, 100))
+        except (ValueError, TypeError):
+            page_size = 20
+
+        paginator = Paginator(songs, page_size)
+        try:
+            page_obj = paginator.page(page)
+        except (PageNotAnInteger, EmptyPage):
+            page_obj = paginator.page(1)
+
+        serializer = SongSerializer(page_obj.object_list, many=True)
+        return Response({
+            'count': paginator.count,
+            'total_pages': paginator.num_pages,
+            'current_page': page_obj.number,
+            'page_size': page_size,
+            'has_next': page_obj.has_next(),
+            'has_previous': page_obj.has_previous(),
+            'results': serializer.data
+        })
+
     serializer = SongSerializer(songs, many=True)
     return Response(serializer.data)
 

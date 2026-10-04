@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { API_ORIGIN } from "../config/api";
-import { Plus, Edit, Trash, RotateCcw, Save, XCircle, Music } from "lucide-react";
-import { getAudioUrl } from "../utils/media";
+import { Plus, Edit, Trash, RotateCcw, Save, XCircle, Music, Search, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { getAudioUrl, getImageUrl } from "../utils/media";
 
 interface Artist {
     id: number;
@@ -20,6 +20,9 @@ interface Song {
     name: string;
     artist: number;
     album: number | null;
+    album_img?: string | null;
+    image_url?: string | null;
+    cover_image?: string | null;
     song_url?: string | null;
     duration: number;
     status: number;
@@ -41,6 +44,9 @@ export default function SongManager() {
     const [artists, setArtists] = useState<Artist[]>([]);
     const [albums, setAlbums] = useState<Album[]>([]);
     const [songs, setSongs] = useState<Song[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(15);
     const [formData, setFormData] = useState<SongFormData>({
         title: "",
         artist: null,
@@ -425,99 +431,211 @@ export default function SongManager() {
                 </div>
             )}
 
-            <div className="bg-gray-900 p-8 rounded-xl shadow-lg overflow-hidden">
-                {songs.length > 0 ? (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="sticky top-0 bg-gray-900 z-10">
-                                <tr className="border-b text-gray-300 text-sm uppercase tracking-wider">
-                                    <th className="p-5 w-16">Mã</th>
-                                    <th className="p-5 w-1/4">Tên bài hát</th>
-                                    <th className="p-5 w-1/5">Nghệ sĩ</th>
-                                    <th className="p-5 w-1/5">Album</th>
-                                    <th className="p-5 w-1/3">File âm thanh</th>
-                                    <th className="p-5 w-24">Loại</th>
-                                    <th className="p-5 w-24">Trạng thái</th>
-                                    <th className="p-5 w-48 text-center">Hành động</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {songs.map((song) => (
-                                    <tr
-                                        key={song.id}
-                                        className="transition-colors duration-200 hover:bg-gray-800/50"
-                                    >
-                                        <td className="p-5 text-gray-200 font-medium">{song.id}</td>
-                                        <td className="p-5 text-gray-200">{song.name}</td>
-                                        <td className="p-5 text-gray-200">{getArtistName(song.artist)}</td>
-                                        <td className="p-5 text-gray-200">{getAlbumName(song.album)}</td>
-                                        <td className="p-5">
-                                            {song.song_url ? (
-                                                <audio controls className="w-full max-w-[300px] h-10">
-                                                    <source src={getAudioUrl(song.song_url)} type="audio/mpeg" />
-                                                </audio>
-                                            ) : (
-                                                <span className="text-gray-500 italic">Không có file</span>
-                                            )}
-                                        </td>
-                                        <td className="p-5">
-                                            <span
-                                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                                                    song.premium === 1
-                                                        ? "bg-blue-600/20 text-blue-400"
-                                                        : "bg-gray-600/20 text-gray-400"
-                                                }`}
+            {/* Filter & Search Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6 bg-gray-900 p-4 rounded-xl border border-gray-800">
+                <div className="relative flex-1 max-w-md">
+                    <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                        type="text"
+                        placeholder="Tìm theo tên bài hát, nghệ sĩ..."
+                        value={searchQuery}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        className="w-full pl-10 pr-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:border-green-500 focus:outline-none placeholder-gray-500 text-sm"
+                    />
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <span>Hiển thị:</span>
+                    <select
+                        value={pageSize}
+                        onChange={(e) => {
+                            setPageSize(Number(e.target.value));
+                            setCurrentPage(1);
+                        }}
+                        className="bg-gray-800 text-white border border-gray-700 rounded-lg px-3 py-1.5 outline-none focus:border-green-500 cursor-pointer"
+                    >
+                        <option value={10}>10 bài / trang</option>
+                        <option value={15}>15 bài / trang</option>
+                        <option value={25}>25 bài / trang</option>
+                        <option value={50}>50 bài / trang</option>
+                        <option value={100}>100 bài / trang</option>
+                    </select>
+                </div>
+            </div>
+
+            <div className="bg-gray-900 p-6 rounded-xl shadow-lg overflow-hidden border border-gray-800">
+                {(() => {
+                    const filteredSongs = songs.filter((song) => {
+                        if (!searchQuery.trim()) return true;
+                        const q = searchQuery.toLowerCase().trim();
+                        const aName = getArtistName(song.artist).toLowerCase();
+                        const sName = song.name.toLowerCase();
+                        return sName.includes(q) || aName.includes(q);
+                    });
+
+                    const totalPages = Math.ceil(filteredSongs.length / pageSize) || 1;
+                    const paginatedSongs = filteredSongs.slice(
+                        (currentPage - 1) * pageSize,
+                        currentPage * pageSize
+                    );
+
+                    return filteredSongs.length > 0 ? (
+                        <>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="sticky top-0 bg-gray-900 z-10">
+                                        <tr className="border-b border-gray-800 text-gray-300 text-xs uppercase tracking-wider">
+                                            <th className="p-4 w-12 text-center">Mã</th>
+                                            <th className="p-4 w-14">Ảnh</th>
+                                            <th className="p-4 w-1/4">Tên bài hát</th>
+                                            <th className="p-4 w-1/5">Nghệ sĩ</th>
+                                            <th className="p-4 w-1/5">Album</th>
+                                            <th className="p-4 w-1/4">File âm thanh</th>
+                                            <th className="p-4 w-24">Loại</th>
+                                            <th className="p-4 w-24">Trạng thái</th>
+                                            <th className="p-4 w-36 text-center">Hành động</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-800/60">
+                                        {paginatedSongs.map((song) => (
+                                            <tr
+                                                key={song.id}
+                                                className="transition-colors duration-200 hover:bg-gray-800/50 text-sm"
                                             >
-                                                {song.premium === 1 ? "Premium" : "Không Premium"}
-                                            </span>
-                                        </td>
-                                        <td className="p-5">
-                                            <span
-                                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                                                    song.status === 1
-                                                        ? "bg-green-600/20 text-green-400"
-                                                        : "bg-red-600/20 text-red-400"
-                                                }`}
-                                            >
-                                                {song.status === 1 ? "Hoạt động" : "Đã xóa"}
-                                            </span>
-                                        </td>
-                                        <td className="p-5">
-                                            <div className="flex justify-center gap-4">
-                                                <button
-                                                    onClick={() => handleEdit(song)}
-                                                    className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 py-1.5 px-4 rounded-lg text-sm font-medium transition-colors duration-200 shadow-md"
-                                                >
-                                                    <Edit size={14} /> Sửa
-                                                </button>
-                                                <button
-                                                    onClick={() => toggleSongStatus(song.id, song.status)}
-                                                    className={`flex items-center gap-1 py-1.5 px-4 rounded-lg text-sm font-medium transition-colors duration-200 shadow-md ${
-                                                        song.status === 1
-                                                            ? "bg-red-600 hover:bg-red-500"
-                                                            : "bg-green-600 hover:bg-green-500"
-                                                    }`}
-                                                >
-                                                    {song.status === 1 ? (
-                                                        <>
-                                                            <Trash size={14} /> Xóa
-                                                        </>
+                                                <td className="p-4 text-gray-400 font-medium text-center">{song.id}</td>
+                                                <td className="p-4">
+                                                    <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-800 border border-gray-700 flex-shrink-0 shadow">
+                                                        <img
+                                                            src={getImageUrl(song.image_url || song.album_img || song.cover_image)}
+                                                            alt={song.name}
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => {
+                                                                e.currentTarget.src = "/default-cover.png";
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </td>
+                                                <td className="p-4 text-white font-medium">{song.name}</td>
+                                                <td className="p-4 text-gray-300">{getArtistName(song.artist)}</td>
+                                                <td className="p-4 text-gray-400">{getAlbumName(song.album)}</td>
+                                                <td className="p-4">
+                                                    {song.song_url ? (
+                                                        <audio controls className="w-full max-w-[260px] h-9">
+                                                            <source src={getAudioUrl(song.song_url)} type="audio/mpeg" />
+                                                        </audio>
                                                     ) : (
-                                                        <>
-                                                            <RotateCcw size={14} /> Khôi phục
-                                                        </>
+                                                        <span className="text-gray-500 italic text-xs">YouTube Stream</span>
                                                     )}
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                ) : (
-                    <p className="text-center text-gray-400 py-6 text-lg">Chưa có bài hát nào.</p>
-                )}
+                                                </td>
+                                                <td className="p-4">
+                                                    <span
+                                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                            song.premium === 1
+                                                                ? "bg-blue-600/20 text-blue-400"
+                                                                : "bg-gray-600/20 text-gray-400"
+                                                        }`}
+                                                    >
+                                                        {song.premium === 1 ? "Premium" : "Thường"}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4">
+                                                    <span
+                                                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                                            song.status === 1
+                                                                ? "bg-green-600/20 text-green-400"
+                                                                : "bg-red-600/20 text-red-400"
+                                                        }`}
+                                                    >
+                                                        {song.status === 1 ? "Hoạt động" : "Đã xóa"}
+                                                    </span>
+                                                </td>
+                                                <td className="p-4">
+                                                    <div className="flex justify-center gap-2">
+                                                        <button
+                                                            onClick={() => handleEdit(song)}
+                                                            className="flex items-center gap-1 bg-blue-600 hover:bg-blue-500 py-1.5 px-3 rounded-lg text-xs font-medium transition-colors shadow"
+                                                        >
+                                                            <Edit size={13} /> Sửa
+                                                        </button>
+                                                        <button
+                                                            onClick={() => toggleSongStatus(song.id, song.status)}
+                                                            className={`flex items-center gap-1 py-1.5 px-3 rounded-lg text-xs font-medium transition-colors shadow ${
+                                                                song.status === 1
+                                                                    ? "bg-red-600 hover:bg-red-500"
+                                                                    : "bg-green-600 hover:bg-green-500"
+                                                            }`}
+                                                        >
+                                                            {song.status === 1 ? (
+                                                                <>
+                                                                    <Trash size={13} /> Xóa
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <RotateCcw size={13} /> Khôi phục
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Pagination Footer */}
+                            {filteredSongs.length > pageSize && (
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-gray-800 text-xs text-gray-400">
+                                    <span>
+                                        Hiển thị bài {(currentPage - 1) * pageSize + 1} -{" "}
+                                        {Math.min(currentPage * pageSize, filteredSongs.length)} trong {filteredSongs.length} bài hát
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <button
+                                            onClick={() => setCurrentPage(1)}
+                                            disabled={currentPage === 1}
+                                            title="Trang đầu"
+                                            className="p-1.5 rounded-lg border border-gray-700 hover:bg-gray-800 disabled:opacity-30 disabled:pointer-events-none transition"
+                                        >
+                                            <ChevronsLeft size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            title="Trang trước"
+                                            className="p-1.5 rounded-lg border border-gray-700 hover:bg-gray-800 disabled:opacity-30 disabled:pointer-events-none transition"
+                                        >
+                                            <ChevronLeft size={16} />
+                                        </button>
+                                        <span className="px-3 py-1 font-bold text-white bg-gray-800 rounded-lg border border-gray-700">
+                                            {currentPage} / {totalPages}
+                                        </span>
+                                        <button
+                                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            title="Trang sau"
+                                            className="p-1.5 rounded-lg border border-gray-700 hover:bg-gray-800 disabled:opacity-30 disabled:pointer-events-none transition"
+                                        >
+                                            <ChevronRight size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => setCurrentPage(totalPages)}
+                                            disabled={currentPage === totalPages}
+                                            title="Trang cuối"
+                                            className="p-1.5 rounded-lg border border-gray-700 hover:bg-gray-800 disabled:opacity-30 disabled:pointer-events-none transition"
+                                        >
+                                            <ChevronsRight size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <p className="text-center text-gray-400 py-6 text-lg">Không tìm thấy bài hát nào.</p>
+                    );
+                })()}
             </div>
         </div>
     );
