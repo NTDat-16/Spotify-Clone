@@ -58,10 +58,20 @@ class UserSerializer(serializers.ModelSerializer):
 class SongSerializer(serializers.ModelSerializer):
     artist_name = serializers.CharField(source='artist.name', read_only=True)
     album_name = serializers.CharField(source='album.name', read_only=True, allow_null=True)
-    album_img = serializers.CharField(source='album.cover_image', read_only=True, allow_null=True)
+    album_img = serializers.SerializerMethodField()
+
+    def get_album_img(self, obj):
+        # Nếu bài hát có cover_image riêng (đối với đĩa đơn/single không thuộc album)
+        if hasattr(obj, 'cover_image') and obj.cover_image:
+            return obj.cover_image
+        # Nếu bài hát thuộc album và album có ảnh
+        if obj.album and obj.album.cover_image:
+            return obj.album.cover_image
+        return None
+
     class Meta:
         model = Song
-        fields = ['id', 'name', 'artist', 'artist_name', 'album', 'album_name', 'album_img', 'duration', 'song_url', 'status', 'premium', 'play_count', 'lyrics']
+        fields = ['id', 'name', 'artist', 'artist_name', 'album', 'album_name', 'album_img', 'cover_image', 'duration', 'song_url', 'status', 'premium', 'play_count', 'lyrics']
 
 class PlaylistSongSerializer(serializers.ModelSerializer):
     song = SongSerializer(read_only=True)

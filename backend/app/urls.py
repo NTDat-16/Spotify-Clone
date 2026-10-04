@@ -41,6 +41,7 @@ from .external_api import (
     spotify_new_releases,
     youtube_search_video,
     import_music_catalog,
+    import_trending_songs,
 )
 
 urlpatterns = [
@@ -94,6 +95,7 @@ urlpatterns = [
     path('api/external/spotify/new-releases/', spotify_new_releases, name='spotify_new_releases'),
     path('api/external/youtube/search/', youtube_search_video, name='youtube_search_video'),
     path('api/external/import-catalog/', import_music_catalog, name='import_music_catalog'),
+    path('api/external/import-trending/', import_trending_songs, name='import_trending_songs'),
 
     # Audio media serving (works both locally and in production)
     re_path(r'^audio/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),

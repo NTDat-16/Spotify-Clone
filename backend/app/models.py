@@ -159,6 +159,7 @@ class Song(models.Model):
     premium = models.IntegerField(default=0)  # ← thêm dòng này
     play_count = models.IntegerField(default=0)
     lyrics = models.TextField(null=True, blank=True)
+    cover_image = models.CharField(max_length=500, blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} - {self.artist.name}"

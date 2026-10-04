@@ -115,14 +115,28 @@ export const CatalogImportModal: React.FC<CatalogImportModalProps> = ({
     setResult(null);
 
     try {
-      const payload: any = { limit };
+      let endpoint = `${API_ORIGIN}/api/external/import-catalog/`;
+      let payload: any = { limit };
+
       if (customQuery.trim()) {
         payload.query = customQuery.trim();
+      } else if (packToRun === "vpop_top") {
+        endpoint = `${API_ORIGIN}/api/external/import-trending/`;
+        payload = { chart: "vn", limit };
+      } else if (packToRun === "usuk_top") {
+        endpoint = `${API_ORIGIN}/api/external/import-trending/`;
+        payload = { chart: "global", limit };
+      } else if (packToRun === "kpop_top") {
+        endpoint = `${API_ORIGIN}/api/external/import-trending/`;
+        payload = { chart: "kpop", limit };
+      } else if (packToRun === "mega") {
+        endpoint = `${API_ORIGIN}/api/external/import-trending/`;
+        payload = { chart: "all", limit };
       } else {
         payload.pack = packToRun;
       }
 
-      const res = await fetch(`${API_ORIGIN}/api/external/import-catalog/`, {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -133,7 +147,10 @@ export const CatalogImportModal: React.FC<CatalogImportModalProps> = ({
         throw new Error(data.error || "Không thể nạp bài hát từ API ngoài.");
       }
 
-      setResult(data);
+      setResult({
+        ...data,
+        sample_tracks: data.sample_tracks || data.tracks || []
+      });
       // Notify other components (like Home, AllSongs) to refresh their lists
       window.dispatchEvent(new Event("catalog-updated"));
       if (onSuccess) onSuccess();
@@ -156,13 +173,13 @@ export const CatalogImportModal: React.FC<CatalogImportModalProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-black flex items-center gap-2">
-                Nạp Tự Động Kho Bài Hát
+                Nạp Bài Hát Thịnh Hành (Trending Hits)
                 <span className="text-xs px-2 py-0.5 rounded-full bg-[#1DB954] text-black font-extrabold uppercase">
-                  1-Click
+                  Top Charts
                 </span>
               </h2>
               <p className="text-xs text-gray-400 mt-0.5">
-                Đồng bộ bài hát chất lượng cao từ Apple Music & Spotify kèm ảnh bìa HD và phát YouTube tức thì
+                Bảng xếp hạng Top Thịnh Hành chính thức (Apple Music & Billboard). Đĩa đơn (Single) sẽ để trống mục Album.
               </p>
             </div>
           </div>
