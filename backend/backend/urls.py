@@ -9,6 +9,7 @@ def healthcheck(_request):
 
 urlpatterns = [
     path("health/", healthcheck, name="healthcheck"),
+    path("health", healthcheck, name="healthcheck_noslash"),
     path("admin/", admin.site.urls),
     # app.urls already defines its public routes with the /api/ prefix.
     path("", include("app.urls")),

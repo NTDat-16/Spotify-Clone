@@ -3,19 +3,19 @@
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
-      "source": "/api/(.*)",
+      "source": "/api(.*)",
       "destination": "/api/index.py"
     },
     {
-      "source": "/health/(.*)",
+      "source": "/health(.*)",
       "destination": "/api/index.py"
     },
     {
-      "source": "/admin/(.*)",
+      "source": "/admin(.*)",
       "destination": "/api/index.py"
     },
     {
-      "source": "/((?!api/|health/|admin/|audio/).*)",
+      "source": "/((?!api|health|admin|audio).*)",
       "destination": "/index.html"
     }
   ]
