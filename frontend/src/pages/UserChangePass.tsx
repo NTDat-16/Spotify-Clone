@@ -95,9 +95,9 @@ interface ChangePasswordProps {
     if (!user) return null;
 
     return (
-        <div className="p-6 bg-[#121212] text-white min-h-screen">
-        <div className="max-w-4xl mx-auto bg-[#181818] p-8 rounded-2xl shadow-lg">
-            <h2 className="text-2xl font-bold mb-6 text-center">Đổi mật khẩu</h2>
+        <div className="p-3 sm:p-6 bg-[#121212] text-white min-h-screen pb-32">
+        <div className="max-w-xl mx-auto bg-[#181818] p-5 sm:p-8 rounded-2xl shadow-lg border border-[#282828]">
+            <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center">Đổi mật khẩu</h2>
             {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
             {success && <p className="text-green-500 text-sm mb-4">{success}</p>}
             <form onSubmit={handleUpdatePassword} className="space-y-4">

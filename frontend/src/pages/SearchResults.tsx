@@ -202,10 +202,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({ query: propQuery }) => {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="p-3 sm:p-6 max-w-7xl mx-auto space-y-4 sm:space-y-6 pb-32">
       {/* Toast thông báo lưu bài hát */}
       {toastMsg && (
-        <div className="fixed bottom-24 right-6 z-50 bg-[#1DB954] text-black px-4 py-2.5 rounded-xl font-bold shadow-2xl flex items-center gap-2 animate-bounce">
+        <div className="fixed bottom-28 md:bottom-24 right-4 sm:right-6 z-50 bg-[#1DB954] text-black px-4 py-2.5 rounded-xl font-bold shadow-2xl flex items-center gap-2 animate-bounce text-xs sm:text-sm">
           <Check size={18} />
           <span>{toastMsg}</span>
         </div>
@@ -214,7 +214,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ query: propQuery }) => {
       {/* Tiêu đề & Thanh chuyển Tab */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#282828] pb-4">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight flex flex-wrap items-center gap-2 sm:gap-3">
             <span>Kết quả cho "{query}"</span>
             {searchStep === "searching_cloud" && (
               <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1.5 animate-pulse">
@@ -223,16 +223,16 @@ const SearchResults: React.FC<SearchResultsProps> = ({ query: propQuery }) => {
               </span>
             )}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-xs sm:text-sm text-gray-400 mt-1">
             Tổng cộng: {displayedSongs.length} bài hát ({localSongs.length} trong thư viện, {spotifySongs.length} trực tuyến)
           </p>
         </div>
 
         {/* Bộ lọc Tabs */}
-        <div className="flex items-center gap-2 bg-[#181818] p-1 rounded-full border border-[#282828] self-start md:self-auto">
+        <div className="flex items-center gap-1.5 sm:gap-2 bg-[#181818] p-1 rounded-2xl sm:rounded-full border border-[#282828] self-start md:self-auto overflow-x-auto no-scrollbar max-w-full">
           <button
             onClick={() => setActiveTab("all")}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+            className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition ${
               activeTab === "all"
                 ? "bg-white text-black shadow font-bold"
                 : "text-gray-400 hover:text-white"
@@ -242,7 +242,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ query: propQuery }) => {
           </button>
           <button
             onClick={() => setActiveTab("local")}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition ${
+            className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition ${
               activeTab === "local"
                 ? "bg-white text-black shadow font-bold"
                 : "text-gray-400 hover:text-white"
@@ -253,14 +253,14 @@ const SearchResults: React.FC<SearchResultsProps> = ({ query: propQuery }) => {
           </button>
           <button
             onClick={() => setActiveTab("spotify")}
-            className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1.5 transition ${
+            className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap flex items-center gap-1.5 transition ${
               activeTab === "spotify"
                 ? "bg-[#1DB954] text-black font-bold shadow"
                 : "text-gray-400 hover:text-white"
             }`}
           >
             <Cloud size={13} />
-            Trực tuyến Cloud ({spotifySongs.length})
+            Trực tuyến ({spotifySongs.length})
           </button>
         </div>
       </div>
@@ -312,23 +312,23 @@ const SearchResults: React.FC<SearchResultsProps> = ({ query: propQuery }) => {
 
       {/* Danh sách kết quả bài hát */}
       {!loading && displayedSongs.length > 0 && (
-        <div className="bg-[#181818] rounded-xl overflow-hidden border border-[#282828] shadow-lg">
+        <div className="bg-[#181818] rounded-xl overflow-x-auto border border-[#282828] shadow-lg">
           <table className="w-full">
             <thead className="bg-[#222] text-left border-b border-[#282828]">
               <tr>
-                <th className="px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-12 text-center">
+                <th className="px-3 sm:px-5 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-8 sm:w-12 text-center">
                   #
                 </th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                <th className="px-3 sm:px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">
                   Tiêu đề & Nghệ sĩ
                 </th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
+                <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider hidden md:table-cell">
                   Album / Nguồn
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center w-36">
+                <th className="px-2 sm:px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center w-28 sm:w-36">
                   Thao tác
                 </th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right w-24">
+                <th className="px-2 sm:px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right w-16 sm:w-24 hidden xs:table-cell">
                   <div className="flex items-center justify-end gap-1">
                     <Clock3Icon size={14} />
                   </div>
@@ -350,7 +350,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ query: propQuery }) => {
                     onClick={() => handlePlay(song, false)}
                   >
                     {/* Index / Play icon on hover */}
-                    <td className="px-5 py-4 whitespace-nowrap text-sm text-center text-gray-400">
+                    <td className="px-3 sm:px-5 py-3.5 whitespace-nowrap text-xs sm:text-sm text-center text-gray-400">
                       <span className="group-hover:hidden">{index + 1}</span>
                       <button
                         onClick={(e) => {
@@ -359,24 +359,24 @@ const SearchResults: React.FC<SearchResultsProps> = ({ query: propQuery }) => {
                         }}
                         className="hidden group-hover:inline-flex items-center justify-center text-white hover:text-[#1DB954]"
                       >
-                        <Play size={16} className="fill-current" />
+                        <Play size={16} className="fill-current text-[#1DB954]" />
                       </button>
                     </td>
 
                     {/* Song info & Image */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
+                    <td className="px-3 sm:px-6 py-3.5 whitespace-nowrap">
+                      <div className="flex items-center gap-2.5 sm:gap-3">
                         <img
                           src={getImageUrl(song.image_url)}
                           alt={song.name}
-                          className="h-11 w-11 rounded-md object-cover flex-shrink-0 shadow bg-[#222]"
+                          className="h-10 w-10 sm:h-11 sm:w-11 rounded-lg object-cover flex-shrink-0 shadow bg-[#222]"
                           onError={(e) => {
                             e.currentTarget.src = "/default-cover.png";
                           }}
                         />
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-white group-hover:text-[#1DB954] transition truncate flex items-center gap-2">
-                            <span>{song.name}</span>
+                          <div className="text-xs sm:text-sm font-semibold text-white group-hover:text-[#1DB954] transition truncate flex items-center gap-1.5 sm:gap-2 max-w-[140px] sm:max-w-xs">
+                            <span className="truncate">{song.name}</span>
                             {isExternal ? (
                               <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#1DB954] text-black">
                                 Cloud Music
@@ -465,7 +465,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({ query: propQuery }) => {
                     </td>
 
                     {/* Duration */}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400 text-right tabular-nums">
+                    <td className="px-2 sm:px-6 py-3.5 whitespace-nowrap text-xs sm:text-sm text-gray-400 text-right tabular-nums hidden xs:table-cell font-mono">
                       {formatDuration(song.duration)}
                     </td>
                   </tr>

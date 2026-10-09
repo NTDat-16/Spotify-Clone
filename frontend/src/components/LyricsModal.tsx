@@ -123,14 +123,14 @@ import { getAudioUrl } from "../utils/media";
             }
 
             return (
-                <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-50 p-4 font-sans">
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-2 sm:p-4 font-sans overflow-y-auto">
                     <div
                         ref={modalRef}
-                        className="bg-[#121212] bg-opacity-90 backdrop-blur-lg rounded-2xl shadow-xl w-full max-w-5xl overflow-hidden flex transition-all duration-300"
+                        className="bg-[#121212]/95 backdrop-blur-lg rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] overflow-y-auto md:overflow-hidden flex flex-col md:flex-row border border-[#2A2A2A] transition-all duration-300 my-auto"
                     >
-                        <div className="w-1/2 p-6 flex flex-col">
+                        <div className="w-full md:w-1/2 p-4 sm:p-6 flex flex-col">
                             {/* Thêm phát video nếu file là mp4 */}
-                            <div className="relative group flex-1">
+                            <div className="relative group flex-1 min-h-[200px] max-h-[300px] md:max-h-none">
                                 {songData && songData.audioUrl && songData.audioUrl.toLowerCase().endsWith('.mp4') ? (
                                     <video
                                         ref={videoRef}
@@ -146,7 +146,7 @@ import { getAudioUrl } from "../utils/media";
                                     <img
                                         src={songData.album_img ? `/uploads/albums/${songData.album_img}` : '/path/to/fallback-image.jpg'}
                                         alt="Ảnh Album"
-                                        className="h-full w-full object-cover rounded-xl transition-transform duration-500 group-hover:scale-105 border border-[#2A2A2A] shadow-lg"
+                                        className="h-full w-full object-cover rounded-xl transition-transform duration-500 group-hover:scale-105 border border-[#2A2A2A] shadow-lg max-h-[260px] md:max-h-none mx-auto"
                                         onError={() => console.error('Không tải được ảnh:', songData.album_img)}
                                     />
                                 ) : (
@@ -156,14 +156,14 @@ import { getAudioUrl } from "../utils/media";
                                 )}
                             </div>
 
-                            <div className="mt-4">
-                                <h1 className="text-[#1DB954] text-2xl font-extrabold tracking-tight">{songData.title}</h1>
-                                <h2 className="text-[#B3B3B3] text-lg font-semibold tracking-wide">{songData.artists}</h2>
-                                <p className="text-[#B3B3B3] text-sm italic">{songData.album_name || "Album không xác định"}</p>
+                            <div className="mt-3 sm:mt-4">
+                                <h1 className="text-[#1DB954] text-xl sm:text-2xl font-extrabold tracking-tight truncate">{songData.title}</h1>
+                                <h2 className="text-[#B3B3B3] text-base sm:text-lg font-semibold tracking-wide truncate">{songData.artists}</h2>
+                                <p className="text-[#B3B3B3] text-xs sm:text-sm italic truncate">{songData.album_name || "Album không xác định"}</p>
                             </div>
                         </div>
 
-                        <div className="w-1/2 p-8 flex flex-col justify-between text-white">
+                        <div className="w-full md:w-1/2 p-4 sm:p-8 flex flex-col justify-between text-white">
                             <div className="flex justify-end items-center border-b border-[#2A2A2A] pb-3">
                                 <div className="flex space-x-4">
                                     <button

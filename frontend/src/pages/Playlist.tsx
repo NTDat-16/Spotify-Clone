@@ -269,29 +269,29 @@ const Playlist: React.FC = () => {
     );
 
   return (
-    <div className="p-6 bg-gradient-to-b from-gray-900 to-black min-h-screen text-gray-200">
+    <div className="p-3 sm:p-6 bg-gradient-to-b from-gray-900 to-black min-h-screen text-gray-200 pb-32 max-w-7xl mx-auto">
       {error && (
         <p className="text-red-400 bg-red-900/50 p-3 rounded-lg mb-4">{error}</p>
       )}
-      <div className="mr-5 ml-5">
-        <div className="mb-8">
+      <div className="mx-0 sm:mx-3">
+        <div className="mb-6 sm:mb-8">
           <div className="relative flex items-center justify-between">
             {isEditingTitle ? (
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                 <input
                   type="text"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="text-2xl font-bold bg-gray-800 text-white border border-gray-700 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="text-xl sm:text-2xl font-bold bg-gray-800 text-white border border-gray-700 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
-                  className="px-4 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="px-3 sm:px-4 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm"
                   onClick={handleRenamePlaylist}
                 >
                   Lưu
                 </button>
                 <button
-                  className="px-4 py-1 bg-gray-700 text-gray-200 rounded-lg hover:bg-gray-600 transition-colors"
+                  className="px-3 sm:px-4 py-1 bg-gray-700 text-gray-200 rounded-lg hover:bg-gray-600 transition-colors text-xs sm:text-sm"
                   onClick={() => {
                     setIsEditingTitle(false);
                     setNewTitle(playlist.name);
@@ -301,11 +301,11 @@ const Playlist: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <h1 className="text-3xl font-bold text-white">{playlist.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white truncate">{playlist.name}</h1>
             )}
             <div className="relative">
               <button
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors p-1"
                 onClick={() => setIsMenuVisible(!isMenuVisible)}
               >
                 <Menu size={24} />
@@ -331,12 +331,12 @@ const Playlist: React.FC = () => {
               )}
             </div>
           </div>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
             {playlist.songs.length} bài hát
           </p>
-          <div className="mt-4 flex items-center gap-4">
+          <div className="mt-4 flex flex-wrap items-center gap-3 sm:gap-4">
             <button
-              className="px-6 py-2 bg-blue-600 text-white rounded-full flex items-center gap-2 hover:bg-blue-700 transition-colors"
+              className="px-5 sm:px-6 py-2 sm:py-2.5 bg-blue-600 text-white rounded-full flex items-center gap-2 hover:bg-blue-700 transition-colors text-xs sm:text-sm font-semibold"
               onClick={() => {
                 if (playlist.songs.length > 0) {
                   const isUserPremium = isUserPremiumAccount();
@@ -352,56 +352,56 @@ const Playlist: React.FC = () => {
               }}
             >
               <PlayIcon size={18} />
-              Phát tất cả
+              <span>Phát tất cả</span>
             </button>
             <button
-              className="px-6 py-2 bg-green-500 text-white rounded-full flex items-center gap-2 hover:bg-green-600 transition-colors"
+              className="px-4 sm:px-5 py-2 sm:py-2.5 bg-green-500 text-white rounded-full flex items-center gap-2 hover:bg-green-600 transition-colors text-xs sm:text-sm font-semibold"
               onClick={() => setIsAddFormVisible(true)}
             >
               <PlusCircleIcon size={18} />
-              Thêm bài hát
+              <span>Thêm bài hát</span>
             </button>
           </div>
         </div>
       </div>
       {isAddFormVisible && (
-        <div className="mb-6 bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 mr-5 ml-5">
-          <h3 className="text-lg font-semibold mb-4 text-white">Thêm bài hát</h3>
+        <div className="mb-6 bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-700 mx-0 sm:mx-3">
+          <h3 className="text-base sm:text-lg font-semibold mb-4 text-white">Thêm bài hát</h3>
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Tìm kiếm bài hát hoặc nghệ sĩ..."
-            className="w-full px-4 py-2 mb-4 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 mb-4 bg-gray-900 text-white border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
           />
           <ul className="max-h-60 overflow-y-auto divide-y divide-gray-700">
             {filteredSongs.map((song) => (
               <li
                 key={song.id}
-                className="flex items-center justify-between p-3 hover:bg-gray-700 rounded-lg transition-colors"
+                className="flex items-center justify-between p-2.5 sm:p-3 hover:bg-gray-700 rounded-lg transition-colors"
               >
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 min-w-0">
                   <img
                     src={
                       song.image_url
                     }
                     alt={song.name}
-                    className="h-12 w-12 rounded-lg object-cover"
+                    className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg object-cover flex-shrink-0"
                   />
-                  <div>
-                    <div className="text-sm font-medium text-white flex items-center gap-2">
-                      {song.name}
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-medium text-white flex items-center gap-2 truncate">
+                      <span className="truncate">{song.name}</span>
                       {isPremiumSong(song) && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors">
-                          Premium
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-600 text-white flex-shrink-0">
+                          VIP
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-gray-400">{song.artist}</div>
+                    <div className="text-[11px] sm:text-xs text-gray-400 truncate">{song.artist}</div>
                   </div>
                 </div>
                 <button
-                  className="text-gray-400 hover:text-green-500 transition-colors"
+                  className="text-gray-400 hover:text-green-500 transition-colors p-2 flex-shrink-0"
                   onClick={() => handleAddSong(song)}
                 >
                   <PlusCircleIcon size={20} />
@@ -410,25 +410,25 @@ const Playlist: React.FC = () => {
             ))}
           </ul>
           <button
-            className="mt-4 px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            className="mt-4 px-5 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors text-xs sm:text-sm"
             onClick={() => setIsAddFormVisible(false)}
           >
             Hủy
           </button>
         </div>
       )}
-      <div className="bg-gray-800 rounded-xl overflow-hidden shadow-lg mr-5 ml-5">
+      <div className="bg-gray-800 rounded-xl overflow-x-auto shadow-lg mx-0 sm:mx-3 border border-gray-700">
         <table className="w-full text-left">
           <thead className="bg-gray-900 text-gray-400">
             <tr>
-              <th className="px-6 py-4 text-xs font-medium uppercase w-12">#</th>
-              <th className="px-6 py-4 text-xs font-medium uppercase">Tiêu đề</th>
-              <th className="px-6 py-4 text-xs font-medium uppercase">Album</th>
-              <th className="px-6 py-4 text-xs font-medium uppercase">
-                <Clock3Icon size={14} className="inline" />
+              <th className="px-3 sm:px-6 py-3.5 text-xs font-medium uppercase w-8 sm:w-12 text-center">#</th>
+              <th className="px-3 sm:px-6 py-3.5 text-xs font-medium uppercase">Tiêu đề</th>
+              <th className="px-4 py-3.5 text-xs font-medium uppercase hidden md:table-cell">Album</th>
+              <th className="px-3 sm:px-6 py-3.5 text-xs font-medium uppercase w-20 sm:w-24 text-right">
+                <Clock3Icon size={14} className="inline mr-1" />
               </th>
-              <th className="px-6 py-4 text-xs font-medium uppercase">Tải về</th>
-              <th className="px-6 py-4 text-xs font-medium uppercase"></th>
+              <th className="px-2 sm:px-4 py-3.5 text-xs font-medium uppercase text-center w-14 sm:w-16">Tải</th>
+              <th className="px-2 sm:px-4 py-3.5 text-xs font-medium uppercase text-right w-14 sm:w-16"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
@@ -440,54 +440,56 @@ const Playlist: React.FC = () => {
                   className="hover:bg-gray-700 transition-colors cursor-pointer"
                   onClick={() => handlePlaySongClick(song)}
                 >
-                  <td className="px-6 py-4 text-sm text-gray-400">
+                  <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-gray-400 text-center">
                     {index + 1}
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-4">
+                  <td className="px-3 sm:px-6 py-3">
+                    <div className="flex items-center gap-3 min-w-0">
                       <img
                         src={song.image_url}
                         alt={song.name}
-                        className="h-12 w-12 rounded-lg object-cover"
+                        className="h-10 w-10 sm:h-12 sm:w-12 rounded-lg object-cover flex-shrink-0"
                       />
-                      <div>
-                        <div className="text-sm font-medium text-white flex items-center gap-2">
-                          {song.name}
+                      <div className="min-w-0">
+                        <div className="text-xs sm:text-sm font-semibold text-white flex items-center gap-2 truncate">
+                          <span className="truncate">{song.name}</span>
                           {isPremiumSong(song) && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white hover:bg-blue-500 transition-colors">
-                              Premium
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-blue-600 text-white flex-shrink-0">
+                              VIP
                             </span>
                           )}
                         </div>
-                        <div className="text-sm text-gray-400">
+                        <div className="text-[11px] sm:text-xs text-gray-400 truncate">
                           {song.artist}
                         </div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-400">
-                    {song.album || "Không có album"}
+                  <td className="px-4 py-3 text-xs sm:text-sm text-gray-400 hidden md:table-cell truncate max-w-xs">
+                    {song.album || "—"}
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-400">
+                  <td className="px-3 sm:px-6 py-3 text-xs sm:text-sm text-gray-400 text-right tabular-nums font-mono">
                     {formatDuration(song.duration)}
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-2 sm:px-4 py-3 text-center">
                     <button
-                      className="text-gray-400 hover:text-gray-200 transition-colors"
+                      className="text-gray-400 hover:text-gray-200 transition-colors p-1.5 rounded-lg hover:bg-gray-700"
                       onClick={(e) => handleDownload(e, song)}
+                      title="Tải về"
                     >
-                      <CircleEllipsis size={20} />
+                      <CircleEllipsis size={18} />
                     </button>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-2 sm:px-4 py-3 text-right">
                     <button
-                      className="text-gray-400 hover:text-red-500 transition-colors"
+                      className="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-gray-700"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteSong(song.id);
                       }}
+                      title="Xóa bài hát"
                     >
-                      <Trash2Icon size={20} />
+                      <Trash2Icon size={18} />
                     </button>
                   </td>
                 </tr>

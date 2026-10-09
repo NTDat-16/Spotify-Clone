@@ -216,8 +216,8 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = () => {
           isMvMode && activeVideoId
             ? {
                 position: "fixed",
-                bottom: "90px",
-                right: "20px",
+                bottom: typeof window !== "undefined" && window.innerWidth < 768 ? "128px" : "90px",
+                right: typeof window !== "undefined" && window.innerWidth < 768 ? "12px" : "20px",
                 zIndex: 49,
               }
             : {
@@ -235,7 +235,9 @@ export const YouTubePlayer: React.FC<YouTubePlayerProps> = () => {
         className={
           isMvMode && activeVideoId
             ? `${
-                isExpanded ? "w-[560px] max-w-[90vw]" : "w-80 md:w-96"
+                isExpanded
+                  ? "w-[560px] max-w-[92vw]"
+                  : "w-[calc(100vw-24px)] max-w-sm md:w-96"
               } bg-[#181818] border border-[#333] rounded-xl shadow-2xl overflow-hidden transition-all duration-300 flex flex-col`
             : ""
         }

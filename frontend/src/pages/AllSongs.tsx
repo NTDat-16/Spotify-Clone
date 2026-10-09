@@ -192,7 +192,7 @@ const AllSongs: React.FC = () => {
   const endIndex = Math.min(currentPage * pageSize, totalSongs);
 
   return (
-    <div className="p-6 text-white pb-32 max-w-7xl mx-auto">
+    <div className="p-3 sm:p-6 text-white pb-32 max-w-7xl mx-auto">
       {/* Header bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
@@ -200,9 +200,9 @@ const AllSongs: React.FC = () => {
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#1DB954] to-emerald-400 flex items-center justify-center text-black shadow-lg">
               <Music size={22} className="stroke-[2.5]" />
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight">Tất Cả Bài Hát</h1>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight">Tất Cả Bài Hát</h1>
           </div>
-          <p className="text-sm text-gray-400">
+          <p className="text-xs sm:text-sm text-gray-400">
             Kho thư viện với hơn {totalSongs > 0 ? totalSongs : "200"} ca khúc chất lượng cao & phát trực tuyến
           </p>
         </div>
@@ -212,7 +212,7 @@ const AllSongs: React.FC = () => {
           <button
             onClick={handlePlayAll}
             disabled={songs.length === 0}
-            className="px-6 py-2.5 bg-[#1DB954] text-black font-bold rounded-full flex items-center gap-2 hover:bg-[#1ed760] hover:scale-105 active:scale-95 transition shadow-lg disabled:opacity-50 disabled:pointer-events-none"
+            className="px-5 sm:px-6 py-2 sm:py-2.5 bg-[#1DB954] text-black font-bold rounded-full flex items-center gap-2 hover:bg-[#1ed760] hover:scale-105 active:scale-95 transition shadow-lg disabled:opacity-50 disabled:pointer-events-none text-xs sm:text-sm"
           >
             <PlayIcon size={18} className="fill-current" />
             <span>Phát trang này</span>
@@ -221,7 +221,7 @@ const AllSongs: React.FC = () => {
       </div>
 
       {/* Page Info & Controls Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-5 bg-[#181818] px-4 py-3 rounded-xl border border-[#282828]">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-5 bg-[#181818] px-3 sm:px-4 py-3 rounded-xl border border-[#282828]">
         <div className="text-xs sm:text-sm text-gray-400">
           Hiển thị từ <strong className="text-white">{totalSongs > 0 ? startIndex : 0}</strong> - <strong className="text-white">{endIndex}</strong> trong tổng số <strong className="text-[#1DB954]">{totalSongs}</strong> bài hát
           {searchQuery && (
@@ -251,18 +251,18 @@ const AllSongs: React.FC = () => {
       </div>
 
       {/* Table container */}
-      <div className="bg-[#181818] rounded-xl overflow-hidden border border-[#282828] shadow-2xl">
+      <div className="bg-[#181818] rounded-xl overflow-x-auto border border-[#282828] shadow-2xl">
         <table className="w-full text-left">
           <thead className="bg-[#202020] text-gray-400 text-xs uppercase tracking-wider border-b border-[#282828]">
             <tr>
-              <th className="px-4 py-3.5 w-12 text-center">#</th>
-              <th className="px-4 py-3.5">Tiêu đề bài hát</th>
+              <th className="px-2 sm:px-4 py-3.5 w-8 sm:w-12 text-center">#</th>
+              <th className="px-3 sm:px-4 py-3.5">Tiêu đề bài hát</th>
               <th className="px-4 py-3.5 hidden md:table-cell">Album / Đĩa đơn</th>
               <th className="px-4 py-3.5 hidden sm:table-cell text-center w-24">Lượt nghe</th>
-              <th className="px-4 py-3.5 text-right w-20">
-                <Clock3Icon size={15} className="inline mr-2" />
+              <th className="px-2 sm:px-4 py-3.5 text-right w-16 sm:w-20 hidden xs:table-cell">
+                <Clock3Icon size={15} className="inline mr-1 sm:mr-2" />
               </th>
-              <th className="px-4 py-3.5 text-center w-32">Thao tác</th>
+              <th className="px-2 sm:px-4 py-3.5 text-center w-28 sm:w-32">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#282828]/60 text-sm">
@@ -294,13 +294,13 @@ const AllSongs: React.FC = () => {
                       handlePlaySong(song as any, false);
                     }}
                   >
-                    <td className="px-4 py-3 text-center text-gray-400 font-medium text-xs">
+                    <td className="px-2 sm:px-4 py-3 text-center text-gray-400 font-medium text-xs">
                       {rankNumber}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
+                    <td className="px-3 sm:px-4 py-3">
+                      <div className="flex items-center gap-2 sm:gap-3">
                         {/* Cover Image thumbnail */}
-                        <div className="relative w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 shadow bg-[#282828]">
+                        <div className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-lg overflow-hidden flex-shrink-0 shadow bg-[#282828]">
                           <img
                             src={song.image_url}
                             alt={song.name}
@@ -318,16 +318,16 @@ const AllSongs: React.FC = () => {
                         {/* Title and artist */}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-white truncate group-hover:text-[#1DB954] transition text-sm">
+                            <span className="font-semibold text-white truncate group-hover:text-[#1DB954] transition text-xs sm:text-sm">
                               {song.name}
                             </span>
                             {songIsPremium && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-black uppercase tracking-wider">
+                              <span className="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-black bg-gradient-to-r from-amber-400 to-yellow-500 text-black uppercase tracking-wider flex-shrink-0">
                                 VIP
                               </span>
                             )}
                           </div>
-                          <div className="text-xs text-gray-400 truncate mt-0.5">
+                          <div className="text-[11px] sm:text-xs text-gray-400 truncate mt-0.5">
                             {song.artist}
                           </div>
                         </div>
@@ -349,13 +349,13 @@ const AllSongs: React.FC = () => {
                     </td>
 
                     {/* Duration */}
-                    <td className="px-4 py-3 text-right text-xs text-gray-400 tabular-nums font-mono pr-4">
+                    <td className="px-2 sm:px-4 py-3 text-right text-xs text-gray-400 tabular-nums font-mono pr-2 sm:pr-4 hidden xs:table-cell">
                       {formatDuration(song.duration)}
                     </td>
 
                     {/* Actions */}
-                    <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1">
+                    <td className="px-2 sm:px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-0.5 sm:gap-1">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();

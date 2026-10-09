@@ -238,7 +238,7 @@ const PremiumSignup: React.FC<PremiumSignupProps> = ({ user, setUser }) => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white pb-24">
+    <div className="min-h-screen bg-[#121212] text-white pb-32">
       {/* Top Banner / Breadcrumb */}
       <div className="max-w-6xl mx-auto px-4 pt-6">
         <button
@@ -393,7 +393,7 @@ const PremiumSignup: React.FC<PremiumSignupProps> = ({ user, setUser }) => {
             </p>
 
             {/* Tab chọn hình thức */}
-            <div className="grid grid-cols-2 gap-3 p-1 bg-[#222] rounded-xl mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 p-1 bg-[#222] rounded-xl mb-6">
               <button
                 type="button"
                 onClick={() => setPaymentMethod("instant")}
@@ -471,7 +471,7 @@ const PremiumSignup: React.FC<PremiumSignupProps> = ({ user, setUser }) => {
           So sánh quyền lợi giữa các gói
         </h3>
 
-        <div className="bg-[#181818] border border-[#282828] rounded-2xl overflow-hidden shadow-lg">
+        <div className="bg-[#181818] border border-[#282828] rounded-2xl overflow-x-auto shadow-lg">
           <table className="w-full text-left text-xs md:text-sm">
             <thead>
               <tr className="border-b border-[#282828] bg-[#222]">

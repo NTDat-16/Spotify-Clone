@@ -167,34 +167,45 @@ const MusicPlayer: React.FC = () => {
   const volumePercent = Math.min(100, Math.max(0, volume * 100));
 
   return (
-    <div className="h-20 bg-[#181818] border-t border-[#282828] px-4 flex items-center justify-between text-white relative w-full overflow-hidden select-none">
+    <div className="fixed md:relative bottom-12 md:bottom-0 left-0 right-0 z-30 h-16 sm:h-20 bg-[#181818]/95 md:bg-[#181818] backdrop-blur-md md:backdrop-blur-none border-t border-[#282828] px-2.5 sm:px-4 flex items-center justify-between text-white w-full select-none shadow-2xl">
+      {/* Mobile Top Thin Progress Bar */}
+      <div
+        className="md:hidden absolute top-0 left-0 right-0 h-1 bg-[#282828] cursor-pointer"
+        onClick={handleSeek}
+      >
+        <div
+          className="h-full bg-[#1DB954] transition-all"
+          style={{ width: `${progressPercent}%` }}
+        />
+      </div>
+
       {/* Thông tin bài hát */}
-      <div className="w-1/4 min-w-[200px] max-w-[320px] flex items-center gap-3 flex-shrink-0">
+      <div className="flex items-center gap-2 sm:gap-3 flex-1 sm:flex-initial sm:w-1/4 sm:min-w-[180px] max-w-[170px] sm:max-w-[280px] min-w-0 flex-shrink-0">
         <img
           src={currentSong.image_url}
           alt={currentSong.name}
-          className="h-12 w-12 rounded object-cover flex-shrink-0 shadow-md"
+          className="h-10 w-10 sm:h-12 sm:w-12 rounded object-cover flex-shrink-0 shadow-md"
           loading="lazy"
           onError={(e) => {
             e.currentTarget.src = "/default-cover.png";
           }}
         />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <h4 className="text-sm font-medium truncate" title={currentSong.name}>
+          <div className="flex items-center gap-1.5">
+            <h4 className="text-xs sm:text-sm font-medium truncate" title={currentSong.name}>
               {currentSong.name}
             </h4>
             {currentSong.source === "spotify" && (
               <span
-                className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#1DB954] text-black flex-shrink-0"
+                className="hidden xs:inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold bg-[#1DB954] text-black flex-shrink-0"
                 title="Phát qua Spotify Catalog & YouTube Player"
               >
                 Spotify
               </span>
             )}
             {isCurrentSongPremium && (
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-600 text-white flex-shrink-0">
-                Premium
+              <span className="hidden xs:inline-block px-1.5 py-0.5 rounded text-[9px] font-semibold bg-blue-600 text-white flex-shrink-0">
+                VIP
               </span>
             )}
             {isLoadingExternal && (
@@ -207,7 +218,7 @@ const MusicPlayer: React.FC = () => {
             )}
           </div>
           <p
-            className="text-xs text-gray-400 truncate"
+            className="text-[11px] sm:text-xs text-gray-400 truncate"
             title={currentSong.artist}
           >
             {currentSong.artist}
@@ -221,10 +232,10 @@ const MusicPlayer: React.FC = () => {
             }
           }}
           title={isLoved ? "Xóa khỏi bài hát yêu thích" : "Lưu vào bài hát yêu thích"}
-          className="text-gray-400 hover:text-white transition flex-shrink-0"
+          className="text-gray-400 hover:text-white transition flex-shrink-0 p-1"
         >
           <Heart
-            size={18}
+            size={17}
             className={
               isLoved
                 ? "fill-[#1DB954] text-[#1DB954]"
@@ -235,12 +246,12 @@ const MusicPlayer: React.FC = () => {
       </div>
 
       {/* Điều khiển phát nhạc (ở giữa) */}
-      <div className="flex-1 max-w-2xl min-w-0 px-4 flex flex-col items-center justify-center">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col items-center justify-center flex-shrink-0 sm:flex-1 sm:max-w-2xl sm:min-w-0 px-1 sm:px-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <button
             onClick={handleShuffle}
             title={isShuffled ? "Tắt phát ngẫu nhiên" : "Bật phát ngẫu nhiên"}
-            className={`${
+            className={`hidden sm:inline-flex ${
               isShuffled ? "text-green-500" : "text-gray-400"
             } hover:text-white transition`}
           >
@@ -249,32 +260,32 @@ const MusicPlayer: React.FC = () => {
           <button
             onClick={playPrevious}
             title="Bài trước đó"
-            className="text-gray-400 hover:text-white transition"
+            className="text-gray-400 hover:text-white transition p-1"
           >
-            <SkipBackIcon size={20} />
+            <SkipBackIcon size={18} className="sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={togglePlayPause}
             title={isPlaying ? "Tạm dừng" : "Phát"}
-            className="h-10 w-10 rounded-full bg-[#1DB954] text-black flex items-center justify-center hover:bg-[#1ed760] hover:scale-105 transition active:scale-95 shadow-md"
+            className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-[#1DB954] text-black flex items-center justify-center hover:bg-[#1ed760] hover:scale-105 transition active:scale-95 shadow-md flex-shrink-0"
           >
             {isPlaying ? (
-              <PauseIcon size={22} />
+              <PauseIcon size={18} className="sm:w-[22px] sm:h-[22px]" />
             ) : (
-              <PlayIcon size={22} className="ml-0.5" />
+              <PlayIcon size={18} className="sm:w-[22px] sm:h-[22px] ml-0.5" />
             )}
           </button>
           <button
             onClick={playNext}
             title="Bài kế tiếp"
-            className="text-gray-400 hover:text-white transition"
+            className="text-gray-400 hover:text-white transition p-1"
           >
-            <SkipForwardIcon size={20} />
+            <SkipForwardIcon size={18} className="sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={handleRepeat}
             title={`Lặp lại: ${repeatMode}`}
-            className={`${
+            className={`hidden sm:inline-flex ${
               repeatMode !== "off" ? "text-green-500" : "text-gray-400"
             } hover:text-white transition relative`}
           >
@@ -287,8 +298,8 @@ const MusicPlayer: React.FC = () => {
           </button>
         </div>
 
-        {/* Thanh tiến độ nghe */}
-        <div className="w-full mt-2 flex items-center gap-2">
+        {/* Thanh tiến độ nghe (Desktop) */}
+        <div className="hidden md:flex w-full mt-2 items-center gap-2">
           <span className="text-[11px] text-gray-400 w-10 text-right tabular-nums flex-shrink-0">
             {formatTime(currentTime)}
           </span>
@@ -308,47 +319,47 @@ const MusicPlayer: React.FC = () => {
       </div>
 
       {/* Điều khiển âm lượng, MV, lời bài hát và hẹn giờ */}
-      <div className="w-1/4 min-w-[200px] max-w-[320px] flex justify-end items-center gap-3 flex-shrink-0">
-        <div className="flex items-center gap-1">
-          <button
-            onClick={toggleMvMode}
-            title={isMvMode ? "Thu nhỏ cửa sổ MV" : "Xem MV / Video (YouTube)"}
-            className={`p-1.5 rounded transition ${
-              isMvMode
-                ? "text-[#1DB954] bg-[#282828]"
-                : "text-gray-400 hover:text-white"
-            }`}
-          >
-            <Tv size={18} />
-          </button>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setShowLyric(true)}
-            title="Xem lời bài hát"
-            className="text-gray-400 hover:text-white transition p-1.5"
-          >
-            <MicIcon size={18} />
-          </button>
-        </div>
-        <div className="flex items-center gap-1">
+      <div className="flex justify-end items-center gap-1 sm:gap-2.5 flex-shrink-0 sm:w-1/4 sm:min-w-[140px] sm:max-w-[280px]">
+        <button
+          onClick={toggleMvMode}
+          title={isMvMode ? "Thu nhỏ cửa sổ MV" : "Xem MV / Video (YouTube)"}
+          className={`p-1.5 rounded transition ${
+            isMvMode
+              ? "text-[#1DB954] bg-[#282828]"
+              : "text-gray-400 hover:text-white"
+          }`}
+        >
+          <Tv size={17} />
+        </button>
+
+        <button
+          onClick={() => setShowLyric(true)}
+          title="Xem lời bài hát"
+          className="text-gray-400 hover:text-white transition p-1.5"
+        >
+          <MicIcon size={17} />
+        </button>
+
+        <div className="hidden sm:flex items-center gap-1">
           <button
             onClick={() => setShowSleepTimer(true)}
             title="Hẹn giờ ngủ"
-            className="text-gray-400 hover:text-white transition"
+            className="text-gray-400 hover:text-white transition p-1"
           >
-            <ClockIcon size={18} />
+            <ClockIcon size={17} />
           </button>
           {timerRemaining !== null && (
-            <span className="text-[11px] text-green-400 font-mono">
+            <span className="text-[10px] text-green-400 font-mono">
               {formatTimer(timerRemaining)}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Slider âm lượng (Ẩn trên mobile để tối ưu không gian) */}
+        <div className="hidden md:flex items-center gap-2 ml-1">
           <VolumeIcon size={16} className="text-gray-400 flex-shrink-0" />
           <div
-            className="w-24 h-1 hover:h-1.5 bg-[#282828] rounded-full cursor-pointer relative overflow-hidden group transition-all"
+            className="w-20 lg:w-24 h-1 hover:h-1.5 bg-[#282828] rounded-full cursor-pointer relative overflow-hidden group transition-all"
             onClick={handleVolumeChange}
           >
             <div

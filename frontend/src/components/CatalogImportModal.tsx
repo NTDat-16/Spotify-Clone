@@ -163,36 +163,36 @@ export const CatalogImportModal: React.FC<CatalogImportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-[#181818] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+      <div className="relative w-full max-w-2xl max-h-[92vh] bg-[#181818] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col text-white">
         {/* Header */}
-        <div className="p-6 border-b border-white/10 flex items-center justify-between bg-[#202020]">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#1DB954]/20 text-[#1DB954] border border-[#1DB954]/30">
-              <DownloadCloud size={24} />
+        <div className="p-4 sm:p-6 border-b border-white/10 flex items-center justify-between bg-[#202020]">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-[#1DB954]/20 text-[#1DB954] border border-[#1DB954]/30 flex-shrink-0">
+              <DownloadCloud size={22} />
             </div>
-            <div>
-              <h2 className="text-xl font-black flex items-center gap-2">
-                Nạp Bài Hát Thịnh Hành (Trending Hits)
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#1DB954] text-black font-extrabold uppercase">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-xl font-black flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <span>Nạp Bài Hát Thịnh Hành</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1DB954] text-black font-extrabold uppercase">
                   Top Charts
                 </span>
               </h2>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 truncate sm:whitespace-normal">
                 Bảng xếp hạng Top Thịnh Hành chính thức (Apple Music & Billboard). Đĩa đơn (Single) sẽ để trống mục Album.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition"
+            className="p-1.5 sm:p-2 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition flex-shrink-0"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 flex-1">
           {/* Result Banner */}
           {result && (
             <div className="p-4 rounded-xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-200 space-y-3">

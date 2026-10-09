@@ -12,6 +12,7 @@ import {
   Trash2,
   Music2,
   Flame,
+  ChevronLeft,
 } from "lucide-react";
 import { useAudio, Song } from "../AudioContext";
 import { askGeminiMusicAI, extractSongsFromText } from "../services/gemini";
@@ -85,6 +86,7 @@ const Chat: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [lovedSet, setLovedSet] = useState<Set<string>>(() => new Set());
+  const [showMobileUsers, setShowMobileUsers] = useState<boolean>(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -384,16 +386,27 @@ const Chat: React.FC = () => {
   );
 
   return (
-    <div className="h-[calc(100vh-80px)] flex bg-[#121212] overflow-hidden select-none">
+    <div className="h-[calc(100dvh-176px)] md:h-[calc(100vh-140px)] flex bg-[#121212] overflow-hidden select-none">
       {/* Cột danh sách người dùng & Bot bên trái */}
-      <div className="w-80 bg-[#181818] border-r border-[#282828] flex flex-col">
+      <div className={`w-full md:w-80 bg-[#181818] border-r border-[#282828] flex-col ${showMobileUsers ? "flex" : "hidden md:flex"}`}>
         <div className="p-4 border-b border-[#282828]">
-          <h3 className="text-base font-bold text-white mb-3 flex items-center justify-between">
-            <span>Tin nhắn & Trợ lý</span>
-            <span className="text-xs text-gray-400 font-normal">
-              {filteredUsers.length} người dùng
-            </span>
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <span>Tin nhắn & Trợ lý</span>
+              <span className="text-xs text-gray-400 font-normal">
+                ({filteredUsers.length})
+              </span>
+            </h3>
+            {selectedUser && (
+              <button
+                type="button"
+                onClick={() => setShowMobileUsers(false)}
+                className="md:hidden text-xs text-[#1DB954] hover:underline font-bold"
+              >
+                Vào chat →
+              </button>
+            )}
+          </div>
 
           <div className="relative">
             <input
@@ -414,7 +427,10 @@ const Chat: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-3 space-y-1.5">
           {/* Mục đặc biệt: Spotify AI Music DJ */}
           <div
-            onClick={() => setSelectedUser(AI_BOT_USER)}
+            onClick={() => {
+              setSelectedUser(AI_BOT_USER);
+              setShowMobileUsers(false);
+            }}
             className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${
               selectedUser?.isAi
                 ? "bg-gradient-to-r from-emerald-950/80 to-[#1DB954]/20 border-[#1DB954]/50 shadow-md"
@@ -452,7 +468,10 @@ const Chat: React.FC = () => {
             filteredUsers.map((user) => (
               <div
                 key={user.id}
-                onClick={() => setSelectedUser(user)}
+                onClick={() => {
+                  setSelectedUser(user);
+                  setShowMobileUsers(false);
+                }}
                 className={`flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all ${
                   selectedUser?.id === user.id
                     ? "bg-[#282828] text-white"
@@ -480,31 +499,41 @@ const Chat: React.FC = () => {
       </div>
 
       {/* Cửa sổ chat bên phải */}
-      <div className="flex-1 flex flex-col bg-[#121212]">
+      <div className={`flex-1 flex flex-col bg-[#121212] ${showMobileUsers ? "hidden md:flex" : "flex"}`}>
         {selectedUser ? (
           <>
             {/* Header phòng chat */}
-            <div className="p-4 border-b border-[#282828] bg-[#181818] flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <div className="p-3 sm:p-4 border-b border-[#282828] bg-[#181818] flex items-center justify-between">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <button
+                  type="button"
+                  onClick={() => setShowMobileUsers(true)}
+                  className="md:hidden p-1.5 rounded-lg bg-[#282828] hover:bg-[#333] text-gray-300 hover:text-white transition flex items-center gap-1 text-xs flex-shrink-0"
+                  title="Danh sách đoạn chat"
+                >
+                  <ChevronLeft size={16} />
+                  <span className="font-semibold">Danh sách</span>
+                </button>
+
                 {selectedUser.isAi ? (
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#1DB954] to-teal-800 flex items-center justify-center shadow-lg">
-                    <Bot size={22} className="text-black" />
+                  <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-gradient-to-br from-[#1DB954] to-teal-800 flex items-center justify-center shadow-lg flex-shrink-0">
+                    <Bot size={20} className="text-black" />
                   </div>
                 ) : (
-                  <div className="h-10 w-10 bg-gray-700 rounded-full flex items-center justify-center text-gray-300">
-                    <UserIcon size={20} />
+                  <div className="h-9 w-9 sm:h-10 sm:w-10 bg-gray-700 rounded-full flex items-center justify-center text-gray-300 flex-shrink-0">
+                    <UserIcon size={18} />
                   </div>
                 )}
-                <div>
-                  <h1 className="text-sm md:text-base font-bold text-white flex items-center gap-2">
-                    {selectedUser.username}
+                <div className="min-w-0">
+                  <h1 className="text-sm md:text-base font-bold text-white flex items-center gap-2 truncate">
+                    <span className="truncate">{selectedUser.username}</span>
                     {selectedUser.isAi && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#1DB954]/20 text-[#1DB954] border border-[#1DB954]/30 font-semibold">
-                        Google Gemini 3.8 Flash
+                      <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-[#1DB954]/20 text-[#1DB954] border border-[#1DB954]/30 font-semibold flex-shrink-0">
+                        Gemini 3.8
                       </span>
                     )}
                   </h1>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-[11px] sm:text-xs text-gray-400 truncate">
                     {selectedUser.isAi
                       ? "Trợ lý âm nhạc 24/7 • Đề xuất theo tâm trạng, ca sĩ, hoàn cảnh"
                       : selectedUser.email}

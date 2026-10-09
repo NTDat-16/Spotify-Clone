@@ -470,9 +470,9 @@ const LoginUser = ({ onLogin, setIsLoggedIn }: LoginUserProps) => {
   };
 
   return (
-    <div className="w-full h-screen flex items-center justify-center bg-[#121212] text-white font-sans">
-      <div className="w-full max-w-md p-8 bg-[#181818] rounded-2xl shadow-lg transform transition-all duration-300 hover:shadow-xl">
-        <div className="text-center mb-10 flex flex-col items-center">
+    <div className="w-full min-h-screen flex items-center justify-center bg-[#121212] text-white font-sans p-4 py-8">
+      <div className="w-full max-w-md p-6 sm:p-8 bg-[#181818] rounded-2xl shadow-lg border border-white/5 transform transition-all duration-300 hover:shadow-xl">
+        <div className="text-center mb-8 sm:mb-10 flex flex-col items-center">
           <img
             src="../logo.png"
             alt="Spotify Logo"

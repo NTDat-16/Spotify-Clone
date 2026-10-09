@@ -156,31 +156,31 @@ const Home: React.FC = () => {
   const quickPicks = albums.slice(0, 6);
 
   return (
-    <div className="space-y-8 bg-[#121212] text-white p-6 pb-28 min-h-screen">
+    <div className="space-y-6 sm:space-y-8 bg-[#121212] text-white p-3 sm:p-6 pb-32 min-h-screen max-w-7xl mx-auto">
       {error && (
         <p className="text-red-400 bg-red-900/50 p-3 rounded-lg mb-4">{error}</p>
       )}
 
       {/* 1. Spotify Spotlight Hero Banner - Album Tam Thái Tử (Jack - J97) */}
       {featuredJackAlbum && (
-        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-amber-950 via-[#261c14] to-[#121212] border border-amber-600/30 p-6 md:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 group">
-          <div className="flex-1 space-y-4 text-center md:text-left z-10">
+        <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-amber-950 via-[#261c14] to-[#121212] border border-amber-600/30 p-4 sm:p-6 md:p-8 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 group">
+          <div className="flex-1 space-y-3 sm:space-y-4 text-center md:text-left z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold tracking-wider uppercase">
               <Sparkles size={14} className="animate-spin text-amber-400" />
               Album Mới Ra Mắt • Jack - J97
             </div>
-            <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white drop-shadow-md">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tight text-white drop-shadow-md">
               {featuredJackAlbum.name}
             </h1>
-            <p className="text-gray-300 text-sm md:text-base max-w-2xl leading-relaxed">
+            <p className="text-gray-300 text-xs sm:text-sm md:text-base max-w-2xl leading-relaxed">
               Album phòng thu chính thức từ nam ca sĩ Jack (J97) với 11 ca khúc mới mang âm hưởng ngũ cung dân gian kết hợp synth-wave hiện đại: <span className="text-amber-300 font-medium">Hoa Trong Đá, Người Dưng, Hào Hoa, Tam Thái Tử, Lưu Niên...</span>
             </p>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2.5 sm:gap-4 pt-2">
               <button
                 onClick={() => handleNavigateToAlbum(featuredJackAlbum.id)}
-                className="px-6 py-3 rounded-full bg-[#1DB954] text-black font-bold flex items-center gap-2 hover:bg-[#1ed760] hover:scale-105 active:scale-95 transition shadow-lg shadow-green-950"
+                className="px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-[#1DB954] text-black font-bold flex items-center gap-2 hover:bg-[#1ed760] hover:scale-105 active:scale-95 transition shadow-lg shadow-green-950 text-xs sm:text-sm"
               >
-                <PlayIcon size={20} className="fill-current" />
+                <PlayIcon size={18} className="fill-current" />
                 Khám Phá Album
               </button>
               <button
@@ -190,16 +190,16 @@ const Home: React.FC = () => {
                     handlePlaySong(tamThaiTuSong, true);
                   }
                 }}
-                className="px-5 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold flex items-center gap-2 backdrop-blur border border-white/10 transition hover:scale-105"
+                className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold flex items-center gap-2 backdrop-blur border border-white/10 transition hover:scale-105 text-xs sm:text-sm"
               >
-                <Tv size={18} className="text-[#1DB954]" />
+                <Tv size={16} className="text-[#1DB954]" />
                 Xem MV "Tam Thái Tử"
               </button>
             </div>
           </div>
 
           <div
-            className="w-48 h-48 md:w-60 md:h-60 rounded-xl overflow-hidden shadow-2xl flex-shrink-0 cursor-pointer group-hover:scale-105 transition-transform duration-300 border-2 border-amber-500/30"
+            className="w-36 h-36 sm:w-48 sm:h-48 md:w-60 md:h-60 rounded-xl overflow-hidden shadow-2xl flex-shrink-0 cursor-pointer group-hover:scale-105 transition-transform duration-300 border-2 border-amber-500/30"
             onClick={() => handleNavigateToAlbum(featuredJackAlbum.id)}
           >
             <img
@@ -453,7 +453,7 @@ const Home: React.FC = () => {
                     return (
                       <div
                         key={song.id}
-                        className="flex items-center p-3.5 hover:bg-[#282828] transition-all cursor-pointer group"
+                        className="flex items-center p-2.5 sm:p-3.5 hover:bg-[#282828] transition-all cursor-pointer group"
                         onClick={() => {
                           if (songIsPremium && !isUserPremiumAccount()) {
                             alert("Bài hát này chỉ dành cho tài khoản Premium! Vui lòng nâng cấp tài khoản để thưởng thức.");
@@ -464,20 +464,20 @@ const Home: React.FC = () => {
                         }}
                       >
                         <span
-                          className={`w-10 text-center text-sm font-bold ${
+                          className={`w-7 sm:w-10 text-center text-xs sm:text-sm font-bold flex-shrink-0 ${
                             rank === 1
-                              ? "text-yellow-400 text-base"
+                              ? "text-yellow-400 text-sm sm:text-base"
                               : rank === 2
-                              ? "text-gray-300 text-base"
+                              ? "text-gray-300 text-sm sm:text-base"
                               : rank === 3
-                              ? "text-amber-600 text-base"
+                              ? "text-amber-600 text-sm sm:text-base"
                               : "text-gray-500"
                           }`}
                         >
                           #{rank}
                         </span>
-                        <div className="flex items-center flex-1 min-w-0 pr-4">
-                          <div className="relative group/cover flex-shrink-0 w-11 h-11 mr-3 rounded-md overflow-hidden shadow bg-[#222]">
+                        <div className="flex items-center flex-1 min-w-0 pr-2 sm:pr-4">
+                          <div className="relative group/cover flex-shrink-0 w-9 h-9 sm:w-11 sm:h-11 mr-2.5 sm:mr-3 rounded-lg overflow-hidden shadow bg-[#222]">
                             <img
                               src={song.image_url}
                               alt={song.name}
@@ -487,35 +487,35 @@ const Home: React.FC = () => {
                               }}
                             />
                             <button className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <PlayIcon size={18} className="text-[#1DB954] fill-current" />
+                              <PlayIcon size={16} className="text-[#1DB954] fill-current" />
                             </button>
                           </div>
                           <div className="min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-sm truncate text-white group-hover:text-[#1DB954] transition">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                              <h3 className="font-semibold text-xs sm:text-sm truncate text-white group-hover:text-[#1DB954] transition">
                                 {song.name}
                               </h3>
                               {songIsPremium && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
-                                  Premium
+                                <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold bg-blue-600 text-white flex-shrink-0">
+                                  VIP
                                 </span>
                               )}
                             </div>
-                            <p className="text-xs text-gray-400 truncate mt-0.5">{song.artist}</p>
+                            <p className="text-[11px] sm:text-xs text-gray-400 truncate mt-0.5">{song.artist}</p>
                           </div>
                         </div>
 
-                        <div className="w-24 text-xs text-gray-400 text-center hidden sm:block">
+                        <div className="w-24 text-xs text-gray-400 text-center hidden md:block">
                           {song.album || "Single"}
                         </div>
 
-                        <div className="w-16 text-xs text-gray-400 text-right tabular-nums pr-4">
+                        <div className="w-12 sm:w-16 text-xs text-gray-400 text-right tabular-nums pr-2 sm:pr-4 font-mono">
                           {formatDuration(song.duration)}
                         </div>
 
-                        <div className="flex items-center justify-end gap-1 flex-shrink-0">
+                        <div className="flex items-center justify-end gap-0.5 sm:gap-1 flex-shrink-0">
                           <button
-                            className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-[#333] transition"
+                            className="text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-[#333] transition"
                             title="Xem MV (YouTube)"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -523,10 +523,10 @@ const Home: React.FC = () => {
                               handlePlaySong(song, true);
                             }}
                           >
-                            <Tv size={16} />
+                            <Tv size={15} />
                           </button>
                           <button
-                            className="text-gray-400 hover:text-white p-2 rounded-lg hover:bg-[#333] transition"
+                            className="text-gray-400 hover:text-white p-1.5 rounded-lg hover:bg-[#333] transition"
                             title={isLoved ? "Xóa khỏi yêu thích" : "Yêu thích"}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -534,16 +534,16 @@ const Home: React.FC = () => {
                             }}
                           >
                             <Heart
-                              size={16}
+                              size={15}
                               className={isLoved ? "fill-[#1DB954] text-[#1DB954]" : "text-gray-400"}
                             />
                           </button>
                           <button
-                            className="text-gray-400 hover:text-gray-200 p-2 rounded-lg hover:bg-[#333] transition"
+                            className="text-gray-400 hover:text-gray-200 p-1.5 rounded-lg hover:bg-[#333] transition hidden sm:inline-flex"
                             title="Tải về"
                             onClick={(e) => handleDownload(e, song)}
                           >
-                            <CircleEllipsis size={18} />
+                            <CircleEllipsis size={17} />
                           </button>
                         </div>
                       </div>

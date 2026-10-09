@@ -269,17 +269,17 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, setUser }) => {
   if (!user) return null;
 
   return (
-    <div className="p-6 bg-[#121212] text-white min-h-screen">
-      <div className="max-w-4xl mx-auto flex gap-6">
+    <div className="p-3 sm:p-6 bg-[#121212] text-white min-h-screen pb-32">
+      <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-6">
         {!user.isPremium && (
-          <div className="w-1/2 bg-[#181818] p-6 rounded-2xl shadow-lg">
-            <h2 className="text-xl font-bold mb-8 text-center bg-gradient-to-r from-[#1DB954] to-[#1ED760] bg-clip-text text-transparent">
+          <div className="w-full md:w-1/2 bg-[#181818] p-5 sm:p-8 rounded-2xl shadow-lg border border-[#282828]">
+            <h2 className="text-xl font-bold mb-6 text-center bg-gradient-to-r from-[#1DB954] to-[#1ED760] bg-clip-text text-transparent">
               Đăng ký Premium
             </h2>
-            <div className="space-y-20">
+            <div className="space-y-6 sm:space-y-8">
               <div>
-                <p className="text-md font-semibold mb-6">Lợi ích của Premium:</p>
-                <ul className="list-disc list-inside text-gray-300 space-y-5 text-sm">
+                <p className="text-sm sm:text-base font-semibold mb-4 text-white">Lợi ích của Premium:</p>
+                <ul className="list-disc list-inside text-gray-300 space-y-3 text-xs sm:text-sm">
                   <li>Nghe nhạc không quảng cáo</li>
                   <li>Chất lượng âm thanh cao hơn</li>
                   <li>Tải nhạc để nghe ngoại tuyến</li>
@@ -288,15 +288,15 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, setUser }) => {
               </div>
               <button
                 onClick={() => navigate("/premium")}
-                className="w-full py-2 bg-[#1DB954] text-black font-semibold rounded-full hover:bg-[#1ED760] transition-all"
+                className="w-full py-2.5 sm:py-3 bg-[#1DB954] text-black font-bold rounded-full hover:bg-[#1ED760] transition-all text-xs sm:text-sm shadow-lg hover:scale-105"
               >
                 Đăng ký ngay
               </button>
             </div>
           </div>
         )}
-        <div className={`${user.isPremium ? "w-full" : "w-1/2"} bg-[#181818] p-8 rounded-2xl shadow-lg`}>
-          <h2 className="text-2xl font-bold mb-6 text-center">Thông tin tài khoản</h2>
+        <div className={`${user.isPremium ? "w-full" : "w-full md:w-1/2"} bg-[#181818] p-5 sm:p-8 rounded-2xl shadow-lg border border-[#282828]`}>
+          <h2 className="text-xl sm:text-2xl font-bold mb-6 text-center text-white">Thông tin tài khoản</h2>
           {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
           {success && <p className="text-green-500 text-sm mb-4">{success}</p>}
           <div className="space-y-4">
